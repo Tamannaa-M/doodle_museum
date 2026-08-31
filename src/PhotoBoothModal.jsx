@@ -1,17 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { RenderAvatar } from './AvatarLibrary'
+import { generateCaricature } from './CaricatureEngine'
 
 export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
   const videoRef = useRef(null)
   const streamRef = useRef(null)
-  const stripCanvasRef = useRef(null)
+  const cameraInputRef = useRef(null)
 
   const [cameraActive, setCameraActive] = useState(false)
   const [photoSnap, setPhotoSnap] = useState(null)
-  const [cameraError, setCameraError] = useState(null)
-  const [isCapturing, setIsCapturing] = useState(false)
+  const [caricatureSnap, setCaricatureSnap] = useState(null)
+  const [isProcessing, setIsProcessing] = useState(false)
   const [timer, setTimer] = useState(null)
-  const [sketchFilter, setSketchFilter] = useState(true)
+  const [caricatureMode, setCaricatureMode] = useState('comic-doodle') // 'comic-doodle' | 'soft-sketch' | 'photo'
 
   // Start Camera
   useEffect(() => {
@@ -22,7 +23,6 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
   }, [])
 
   async function startCamera() {
-    setCameraError(null)
     try {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -32,15 +32,12 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
         streamRef.current = stream
         if (videoRef.current) {
           videoRef.current.srcObject = stream
-          videoRef.current.play()
+          await videoRef.current.play()
           setCameraActive(true)
         }
-      } else {
-        setCameraError('Camera access is not supported by your browser. You can upload a photo!')
       }
     } catch (err) {
-      console.warn('Camera permission denied or unavailable:', err)
-      setCameraError('Camera permission denied or unavailable. You can upload a photo!')
+      console.warn('Webcam stream not available (using native camera input):', err)
       setCameraActive(false)
     }
   }
@@ -52,10 +49,14 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
     }
   }
 
-  // Trigger Snapshot with countdown
+  // Snap from live video
   function triggerCapture() {
-    if (isCapturing) return
-    setIsCapturing(true)
+    if (!cameraActive) {
+      // Trigger native camera app
+      cameraInputRef.current?.click()
+      return
+    }
+
     let count = 3
     setTimer(count)
 
@@ -67,121 +68,127 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
         clearInterval(interval)
         setTimer('📸 FLASH!')
         setTimeout(() => {
-          captureFrame()
+          captureVideoFrame()
           setTimer(null)
-          setIsCapturing(false)
         }, 400)
       }
-    }, 800)
+    }, 700)
   }
 
-  function captureFrame() {
+  function captureVideoFrame() {
     const video = videoRef.current
     if (!video) return
 
-    const tempCanvas = document.createElement('canvas')
-    tempCanvas.width = video.videoWidth || 640
-    tempCanvas.height = video.videoHeight || 480
-    const ctx = tempCanvas.getContext('2d')
+    const canvas = document.createElement('canvas')
+    canvas.width = video.videoWidth || 640
+    canvas.height = video.videoHeight || 480
+    const ctx = canvas.getContext('2d')
 
-    // Mirror image for selfie mode
-    ctx.translate(tempCanvas.width, 0)
+    // Mirror for selfie mode
+    ctx.translate(canvas.width, 0)
     ctx.scale(-1, 1)
-    ctx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height)
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
 
-    const dataUrl = tempCanvas.toDataURL('image/png')
-    setPhotoSnap(dataUrl)
+    const rawData = canvas.toDataURL('image/png')
+    processPhotoToCaricature(rawData)
   }
 
-  function handleFileUpload(e) {
+  function handleFileSelect(e) {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
     reader.onload = (event) => {
-      setPhotoSnap(event.target.result)
+      processPhotoToCaricature(event.target.result)
     }
     reader.readAsDataURL(file)
   }
 
-  // Download High-Res Photostrip
+  async function processPhotoToCaricature(sourceImage) {
+    setPhotoSnap(sourceImage)
+    setIsProcessing(true)
+
+    if (caricatureMode === 'photo') {
+      setCaricatureSnap(sourceImage)
+      setIsProcessing(false)
+      return
+    }
+
+    try {
+      const caricature = await generateCaricature(sourceImage, caricatureMode)
+      setCaricatureSnap(caricature)
+    } catch (err) {
+      console.error('Caricature generation failed:', err)
+      setCaricatureSnap(sourceImage)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // Re-process if filter mode changes
+  useEffect(() => {
+    if (photoSnap) {
+      processPhotoToCaricature(photoSnap)
+    }
+  }, [caricatureMode])
+
+  // Download 3-frame vertical strip (Reference Image 3)
   function downloadPhotoStrip() {
     const canvas = document.createElement('canvas')
     const width = 420
-    const height = 960
+    const height = 980
     canvas.width = width
     canvas.height = height
     const ctx = canvas.getContext('2d')
 
-    // Cardboard / Cream paper background
+    // Paper background
     ctx.fillStyle = '#faf7f0'
     ctx.fillRect(0, 0, width, height)
 
-    // Outer double border
-    ctx.strokeStyle = '#181512'
-    ctx.lineWidth = 4
-    ctx.strokeRect(10, 10, width - 20, height - 20)
+    // Outer double black border (Reference Image 3)
+    ctx.strokeStyle = '#161616'
+    ctx.lineWidth = 6
+    ctx.strokeRect(12, 12, width - 24, height - 24)
     ctx.lineWidth = 1.5
-    ctx.strokeRect(16, 16, width - 32, height - 32)
+    ctx.strokeRect(18, 18, width - 36, height - 36)
 
-    // Header Text
-    ctx.fillStyle = '#181512'
+    // Header
+    ctx.fillStyle = '#161616'
     ctx.font = 'bold 16px "Playfair Display", Georgia, serif'
     ctx.textAlign = 'center'
-    ctx.fillText('✦ THE DOODLE MUSEUM ✦', width / 2, 42)
-    ctx.font = 'italic 12px "Caveat", cursive, sans-serif'
-    ctx.fillText('Live Photo Booth Memories • 2026', width / 2, 60)
+    ctx.fillText('✦ THE DOODLE MUSEUM ✦', width / 2, 44)
+    ctx.font = 'bold 13px "Caveat", cursive'
+    ctx.fillText('Live Photo Booth Memories • 2026', width / 2, 62)
 
-    const frameWidth = 360
+    const frameWidth = 356
     const frameHeight = 240
     const frameX = (width - frameWidth) / 2
 
-    // Helper to draw framed box
-    function drawBox(y, label) {
+    function drawBox(y) {
       ctx.fillStyle = '#ffffff'
       ctx.fillRect(frameX, y, frameWidth, frameHeight)
-      ctx.strokeStyle = '#181512'
-      ctx.lineWidth = 2.5
+      ctx.strokeStyle = '#161616'
+      ctx.lineWidth = 3
       ctx.strokeRect(frameX, y, frameWidth, frameHeight)
-
-      // Corner flourishes
-      ctx.beginPath()
-      ctx.arc(frameX + 12, y + 12, 3, 0, Math.PI * 2)
-      ctx.arc(frameX + frameWidth - 12, y + 12, 3, 0, Math.PI * 2)
-      ctx.arc(frameX + 12, y + frameHeight - 12, 3, 0, Math.PI * 2)
-      ctx.arc(frameX + frameWidth - 12, y + frameHeight - 12, 3, 0, Math.PI * 2)
-      ctx.fillStyle = '#181512'
-      ctx.fill()
     }
 
-    // Frame 1: Snapshot
-    const y1 = 76
+    // Frame 1: Caricature
+    const y1 = 78
     drawBox(y1)
-    if (photoSnap) {
+    if (caricatureSnap) {
       const img1 = new Image()
       img1.crossOrigin = 'anonymous'
       img1.onload = () => {
-        ctx.save()
-        ctx.beginPath()
-        ctx.rect(frameX + 4, y1 + 4, frameWidth - 8, frameHeight - 8)
-        ctx.clip()
-        if (sketchFilter) {
-          ctx.filter = 'grayscale(100%) contrast(140%)'
-        }
         ctx.drawImage(img1, frameX + 4, y1 + 4, frameWidth - 8, frameHeight - 8)
-        ctx.restore()
         drawSecond()
       }
-      img1.src = photoSnap
+      img1.src = caricatureSnap
     } else {
-      ctx.fillStyle = '#6e6252'
-      ctx.font = 'italic 14px "Caveat", cursive'
-      ctx.fillText('[ Live Snapshot Frame ]', width / 2, y1 + frameHeight / 2)
       drawSecond()
     }
 
     function drawSecond() {
       // Frame 2: Doodle Artwork
-      const y2 = 336
+      const y2 = 338
       drawBox(y2)
       if (doodle?.image_url) {
         const img2 = new Image()
@@ -197,15 +204,15 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
     }
 
     function drawThird() {
-      // Frame 3: Artist Avatar & Memories
-      const y3 = 596
+      // Frame 3: Artist Avatar Stamp & Caricature Signature
+      const y3 = 598
       drawBox(y3)
 
-      ctx.fillStyle = '#181512'
+      ctx.fillStyle = '#161616'
       ctx.font = 'bold 22px "Playfair Display", serif'
       ctx.fillText(`"${doodle?.title || 'Masterpiece'}"`, width / 2, y3 + 70)
 
-      ctx.font = 'bold 18px "Caveat", cursive'
+      ctx.font = 'bold 20px "Caveat", cursive'
       ctx.fillText(`Created by: ${artistName || 'Museum Artist'} ✦`, width / 2, y3 + 115)
 
       ctx.font = '24px sans-serif'
@@ -215,11 +222,11 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
       ctx.fillText('✦ The Doodle Museum Collection ✦', width / 2, y3 + 195)
 
       // Footer
-      ctx.fillStyle = '#181512'
+      ctx.fillStyle = '#161616'
       ctx.font = 'bold 13px "Caveat", cursive'
-      ctx.fillText('insert memories #doodlemuseum ✦ 2026', width / 2, 875)
+      ctx.fillText('insert memories #doodlemuseum ✦ 2026', width / 2, 890)
       ctx.font = '10px sans-serif'
-      ctx.fillText('♡ ♡ ♡ ♡ ♡', width / 2, 895)
+      ctx.fillText('♡ ♡ ♡ ♡ ♡', width / 2, 910)
 
       // Download
       const link = document.createElement('a')
@@ -241,22 +248,24 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
           ✕
         </button>
 
-        {/* Cardboard Booth Header (Reference Image 2) */}
+        {/* Header */}
         <div className="cardboard-booth-header">
           <div className="cardboard-badge">LIVE doodle</div>
           <h2 className="cardboard-title">Photo Booth</h2>
-          <p className="cardboard-subtitle">Create your 3-frame museum memories photo strip! 📸✨</p>
+          <p className="cardboard-subtitle">
+            Take or upload your photo & get a cute hand-drawn caricature strip! 📸✨
+          </p>
         </div>
 
         <div className="photobooth-split-view">
-          {/* LEFT: Camera & Controls */}
+          {/* LEFT: Camera View & Caricature Controls */}
           <div className="photobooth-camera-pane">
             <div className="camera-viewfinder-box">
-              {photoSnap ? (
+              {caricatureSnap ? (
                 <img
-                  src={photoSnap}
-                  alt="Snapshot"
-                  className={`captured-photo-preview ${sketchFilter ? 'sketch-mode' : ''}`}
+                  src={caricatureSnap}
+                  alt="Caricature Preview"
+                  className="captured-photo-preview"
                 />
               ) : cameraActive ? (
                 <video
@@ -264,74 +273,111 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                   autoPlay
                   playsInline
                   muted
-                  className={`live-camera-video ${sketchFilter ? 'sketch-mode' : ''}`}
+                  className="live-camera-video"
                 />
               ) : (
                 <div className="camera-placeholder-notice">
-                  <span>📷</span>
-                  <p>{cameraError || 'Preparing camera...'}</p>
+                  <span>📸</span>
+                  <p>Click below to take a photo or upload an image to draw your caricature!</p>
                 </div>
               )}
 
               {/* Countdown overlay */}
               {timer && <div className="camera-countdown-overlay">{timer}</div>}
+
+              {/* Processing Loader */}
+              {isProcessing && (
+                <div className="camera-countdown-overlay" style={{ fontSize: '24px' }}>
+                  ✏️ Drawing your cute caricature...
+                </div>
+              )}
+            </div>
+
+            {/* Filter Mode Selector */}
+            <div className="caricature-mode-pills">
+              <button
+                type="button"
+                className={`caricature-pill-btn ${caricatureMode === 'comic-doodle' ? 'active' : ''}`}
+                onClick={() => setCaricatureMode('comic-doodle')}
+              >
+                🖋️ Comic Caricature
+              </button>
+              <button
+                type="button"
+                className={`caricature-pill-btn ${caricatureMode === 'soft-sketch' ? 'active' : ''}`}
+                onClick={() => setCaricatureMode('soft-sketch')}
+              >
+                ✏️ Soft Sketch
+              </button>
+              <button
+                type="button"
+                className={`caricature-pill-btn ${caricatureMode === 'photo' ? 'active' : ''}`}
+                onClick={() => setCaricatureMode('photo')}
+              >
+                📷 B&W Photo
+              </button>
             </div>
 
             {/* Camera Actions */}
             <div className="camera-action-toolbar">
               {photoSnap ? (
                 <button
+                  type="button"
                   className="booth-btn secondary"
-                  onClick={() => setPhotoSnap(null)}
+                  onClick={() => {
+                    setPhotoSnap(null)
+                    setCaricatureSnap(null)
+                    startCamera()
+                  }}
                 >
-                  🔄 Retake Photo
+                  🔄 Retake / New Photo
                 </button>
               ) : (
                 <button
+                  type="button"
                   className="booth-btn primary"
                   onClick={triggerCapture}
-                  disabled={!cameraActive || isCapturing}
                 >
                   📸 Take Snapshot!
                 </button>
               )}
 
-              <label className="booth-btn outline upload-label" title="Upload photo from device">
-                📁 Upload Photo
-                <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} />
-              </label>
-
+              {/* Native Mobile Camera / File upload trigger */}
               <button
-                className={`booth-btn outline ${sketchFilter ? 'active' : ''}`}
-                onClick={() => setSketchFilter(!sketchFilter)}
-                title="Toggle B&W Doodle Sketch Filter"
+                type="button"
+                className="booth-btn outline"
+                onClick={() => cameraInputRef.current?.click()}
               >
-                ✏️ {sketchFilter ? 'Sketch: ON' : 'Sketch: OFF'}
+                📁 Upload / Mobile Camera
               </button>
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                onChange={handleFileSelect}
+                style={{ display: 'none' }}
+              />
             </div>
           </div>
 
-          {/* RIGHT: Live Photostrip Preview (Matching Reference Image 2) */}
+          {/* RIGHT: Photostrip Preview (Matching Reference Image 3) */}
           <div className="photobooth-strip-container">
-            <div className="vintage-photo-strip" ref={stripCanvasRef}>
+            <div className="vintage-photo-strip">
               <div className="strip-header">
                 <span className="strip-stars">✦ ✦ ✦</span>
                 <div className="strip-brand">THE DOODLE MUSEUM</div>
                 <div className="strip-tag">LIVE PHOTO BOOTH</div>
               </div>
 
-              {/* Strip Frame 1: Snapshot */}
+              {/* Strip Frame 1: Caricature */}
               <div className="strip-frame">
-                {photoSnap ? (
-                  <img
-                    src={photoSnap}
-                    alt="Photo"
-                    className={`strip-img ${sketchFilter ? 'sketch-mode' : ''}`}
-                  />
+                {caricatureSnap ? (
+                  <img src={caricatureSnap} alt="Caricature" className="strip-img" />
                 ) : (
                   <div className="strip-frame-empty">
                     <span>📸</span>
-                    <p>Frame 1: Your Photo</p>
+                    <p>Frame 1: Your Caricature</p>
                   </div>
                 )}
               </div>
@@ -348,10 +394,10 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                 )}
               </div>
 
-              {/* Strip Frame 3: Artist Avatar & Caricature Stamp */}
+              {/* Strip Frame 3: Artist Avatar & Signature Stamp */}
               <div className="strip-frame strip-avatar-frame">
                 <div className="strip-avatar-display">
-                  <RenderAvatar avatar={avatar} size={70} />
+                  <RenderAvatar avatar={avatar} size={64} />
                 </div>
                 <div className="strip-artist-signature">
                   <span className="by-line">Artist:</span>
@@ -363,12 +409,18 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
               {/* Strip Footer */}
               <div className="strip-footer">
                 <div className="strip-insert-badge">insert memories ✦</div>
-                <div className="strip-date">{new Date().toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</div>
+                <div className="strip-date">
+                  {new Date().toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                </div>
               </div>
             </div>
 
             {/* Download Strip Button */}
-            <button className="download-strip-btn" onClick={downloadPhotoStrip}>
+            <button
+              type="button"
+              className="download-strip-btn"
+              onClick={downloadPhotoStrip}
+            >
               📥 Download Photostrip (.PNG)
             </button>
           </div>
