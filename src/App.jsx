@@ -1,6 +1,40 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from './supabaseClient'
 import { DoodleFrame } from './DoodleFrames'
+import { RenderAvatar } from './AvatarLibrary'
+import { AvatarStudioModal } from './AvatarStudioModal'
+import { PhotoBoothModal } from './PhotoBoothModal'
+
+/**
+ * Helper to parse title, artist, and avatar metadata
+ */
+function parseDoodleMetadata(doodle, index = 0) {
+  let cleanTitle = doodle.title || 'Untitled Doodle'
+  let artistName = 'Anonymous Artist'
+  let avatar = ['avatar-pigtails', 'avatar-cap-boy', 'avatar-glasses', 'avatar-cat', 'avatar-sprout', 'avatar-star', 'avatar-curly', 'avatar-crown'][index % 8]
+
+  if (cleanTitle.includes(' /// by ')) {
+    const parts = cleanTitle.split(' /// by ')
+    cleanTitle = parts[0] || 'Untitled Doodle'
+    if (parts[1]) {
+      const subParts = parts[1].split(' /// ')
+      artistName = subParts[0] || 'Anonymous Artist'
+      if (subParts[1]) {
+        avatar = subParts[1]
+      }
+    }
+  } else if (doodle.artist_name || doodle.artist) {
+    artistName = doodle.artist_name || doodle.artist
+    avatar = doodle.avatar || doodle.avatar_url || avatar
+  }
+
+  return {
+    ...doodle,
+    cleanTitle,
+    artistName,
+    avatar,
+  }
+}
 
 function App() {
   const canvasRef = useRef(null)
@@ -15,6 +49,10 @@ function App() {
   const [tool, setTool] = useState('pen')
   const [color, setColor] = useState('#000000')
   const [brushSize, setBrushSize] = useState(5)
+
+  // Modals state
+  const [showAvatarModal, setShowAvatarModal] = useState(false)
+  const [photoBoothTarget, setPhotoBoothTarget] = useState(null) // { doodle, artistName, avatar }
 
   // -------------------------
   // PRESET COLOUR PALETTE
@@ -209,9 +247,36 @@ function App() {
   }
 
   // -------------------------
-  // SAVE DOODLE (Crop Bounding Box & Upload)
+  // CHECK CANVAS CONTENT & OPEN AVATAR STUDIO
   // -------------------------
-  async function saveDoodle() {
+  function initiateSaveFlow() {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const pixels = imageData.data
+    let foundDrawing = false
+
+    for (let i = 3; i < pixels.length; i += 4) {
+      if (pixels[i] > 0) {
+        foundDrawing = true
+        break
+      }
+    }
+
+    if (!foundDrawing) {
+      alert('Draw something on the canvas first before saving to the museum! 🎨✨')
+      return
+    }
+
+    setShowAvatarModal(true)
+  }
+
+  // -------------------------
+  // SAVE DOODLE (With Artist & Avatar metadata)
+  // -------------------------
+  async function handleCompleteSave({ title: saveTitle, artistName: saveArtist, avatar: saveAvatar }) {
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -224,26 +289,18 @@ function App() {
     let minY = canvas.height
     let maxX = 0
     let maxY = 0
-    let foundDrawing = false
 
     for (let y = 0; y < canvas.height; y++) {
       for (let x = 0; x < canvas.width; x++) {
         const index = (y * canvas.width + x) * 4
         const alpha = pixels[index + 3]
         if (alpha > 0) {
-          foundDrawing = true
           if (x < minX) minX = x
           if (x > maxX) maxX = x
           if (y < minY) minY = y
           if (y > maxY) maxY = y
         }
       }
-    }
-
-    if (!foundDrawing) {
-      alert('Draw something on the canvas first! 🎨')
-      setSaving(false)
-      return
     }
 
     const padding = 36
@@ -299,10 +356,13 @@ function App() {
         .from('doodles')
         .getPublicUrl(fileName)
 
+      // Encode cleanTitle, artistName, and avatar
+      const encodedTitle = `${saveTitle} /// by ${saveArtist} /// ${saveAvatar}`
+
       const { error: databaseError } = await supabase
         .from('doodles')
         .insert({
-          title: title.trim() || 'Untitled Doodle',
+          title: encodedTitle,
           image_url: data.publicUrl,
         })
 
@@ -315,9 +375,27 @@ function App() {
 
       setTitle('')
       setSaving(false)
+      setShowAvatarModal(false)
       clearCanvas()
       await fetchDoodles()
     }, 'image/png')
+  }
+
+  // Direct Photo Booth launch for current canvas
+  function launchPhotoBoothForCanvas(artistMeta) {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const dataUrl = canvas.toDataURL('image/png')
+
+    setShowAvatarModal(false)
+    setPhotoBoothTarget({
+      doodle: {
+        title: artistMeta?.title || title || 'Current Doodle',
+        image_url: dataUrl,
+      },
+      artistName: artistMeta?.artistName || 'Museum Artist',
+      avatar: artistMeta?.avatar || 'avatar-pigtails',
+    })
   }
 
   return (
@@ -447,19 +525,31 @@ function App() {
               </p>
             </div>
 
-            {/* ARTWORK SAVE CONTROLS */}
+            {/* ARTWORK SAVE CONTROLS & PHOTO BOOTH BUTTON */}
             <div className="save-artwork-panel">
-              <input
-                className="artwork-title-input"
-                type="text"
-                placeholder="Name your artwork..."
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                maxLength={45}
-              />
+              <button
+                className="add-museum-btn photo-booth-nav-btn"
+                onClick={() => {
+                  const canvas = canvasRef.current
+                  const dataUrl = canvas ? canvas.toDataURL('image/png') : null
+                  setPhotoBoothTarget({
+                    doodle: {
+                      title: title || 'Museum Doodle',
+                      image_url: dataUrl || (doodles[0]?.image_url ?? ''),
+                    },
+                    artistName: localStorage.getItem('doodle_artist_name') || 'Museum Artist',
+                    avatar: 'avatar-pigtails',
+                  })
+                }}
+                type="button"
+                style={{ background: '#3b3022', borderColor: '#8c6e33' }}
+              >
+                📸 Photo Booth
+              </button>
+
               <button
                 className="add-museum-btn"
-                onClick={saveDoodle}
+                onClick={initiateSaveFlow}
                 disabled={saving}
               >
                 {saving ? '⏳ Archiving...' : '💾 Add to Museum'}
@@ -524,7 +614,8 @@ function App() {
               </div>
             ) : (
               <div className="salon-gallery-wall">
-                {doodles.map((doodle, index) => {
+                {doodles.map((rawDoodle, index) => {
+                  const doodle = parseDoodleMetadata(rawDoodle, index)
                   const frameType = frameTypeList[index % frameTypeList.length]
 
                   return (
@@ -532,7 +623,7 @@ function App() {
                       key={doodle.id || index}
                       className="artwork-card"
                       onClick={() => setSelectedDoodle(doodle)}
-                      title={`Inspect "${doodle.title || 'Untitled'}"`}
+                      title={`Inspect "${doodle.cleanTitle}" by ${doodle.artistName}`}
                     >
                       {/* Brass Nail & Hanging Cord */}
                       <div className="hanging-mechanism">
@@ -540,17 +631,26 @@ function App() {
                         <div className="hanging-cord"></div>
                       </div>
 
+                      {/* Top-Right Artist Avatar Seal */}
+                      <div className="artwork-artist-seal" title={`Artist: ${doodle.artistName}`}>
+                        <RenderAvatar avatar={doodle.avatar} size={34} />
+                      </div>
+
                       {/* Hand-Drawn Black & White SVG Frame */}
                       <DoodleFrame
                         frameType={frameType}
                         imageUrl={doodle.image_url}
-                        title={doodle.title || 'Doodle'}
+                        title={doodle.cleanTitle}
                       />
 
                       {/* Hand-Drawn Museum Wall Plaque */}
                       <div className="museum-wall-plaque">
                         <div className="plaque-title">
-                          {doodle.title || 'Untitled Doodle'}
+                          {doodle.cleanTitle}
+                        </div>
+                        <div className="plaque-artist-row">
+                          <RenderAvatar avatar={doodle.avatar} size={18} />
+                          <span className="plaque-artist-name">by {doodle.artistName}</span>
                         </div>
                         <div className="plaque-metadata">
                           DOODLE •{' '}
@@ -659,7 +759,32 @@ function App() {
         </nav>
 
         {/* ======================================================
-            4. MODAL SPOTLIGHT VIEWER (Zoom in on Click)
+            4. ARTIST AVATAR & TAGGING MODAL ("Who Made This?")
+            ====================================================== */}
+        {showAvatarModal && (
+          <AvatarStudioModal
+            defaultTitle={title}
+            onSave={handleCompleteSave}
+            onOpenPhotoBooth={launchPhotoBoothForCanvas}
+            onClose={() => setShowAvatarModal(false)}
+            saving={saving}
+          />
+        )}
+
+        {/* ======================================================
+            5. LIVE DOODLE PHOTO BOOTH MODAL (3-Frame Strip Creator)
+            ====================================================== */}
+        {photoBoothTarget && (
+          <PhotoBoothModal
+            doodle={photoBoothTarget.doodle}
+            artistName={photoBoothTarget.artistName}
+            avatar={photoBoothTarget.avatar}
+            onClose={() => setPhotoBoothTarget(null)}
+          />
+        )}
+
+        {/* ======================================================
+            6. MODAL SPOTLIGHT VIEWER (Zoom in on Click)
             ====================================================== */}
         {selectedDoodle && (
           <div
@@ -681,13 +806,20 @@ function App() {
               <div className="modal-frame-wrapper">
                 <img
                   src={selectedDoodle.image_url}
-                  alt={selectedDoodle.title || 'Artwork'}
+                  alt={selectedDoodle.cleanTitle || 'Artwork'}
                   className="modal-artwork-img"
                 />
               </div>
 
+              <div className="plaque-artist-row" style={{ marginTop: '16px' }}>
+                <RenderAvatar avatar={selectedDoodle.avatar} size={28} />
+                <span className="plaque-artist-name" style={{ fontSize: '18px' }}>
+                  by {selectedDoodle.artistName}
+                </span>
+              </div>
+
               <h2 className="modal-artwork-title">
-                {selectedDoodle.title || 'Untitled Doodle'}
+                {selectedDoodle.cleanTitle}
               </h2>
 
               <div className="modal-artwork-sub">
@@ -704,6 +836,23 @@ function App() {
                   : 'EST. 2026'}{' '}
                 • THE DOODLE MUSEUM
               </div>
+
+              {/* Make Photo Strip with this Artwork Button */}
+              <button
+                className="open-photobooth-pill-btn"
+                style={{ marginTop: '18px', maxWidth: '320px' }}
+                onClick={() => {
+                  const currentSelected = selectedDoodle
+                  setSelectedDoodle(null)
+                  setPhotoBoothTarget({
+                    doodle: currentSelected,
+                    artistName: currentSelected.artistName,
+                    avatar: currentSelected.avatar,
+                  })
+                }}
+              >
+                📸 Create Photo Strip with This Art!
+              </button>
             </div>
           </div>
         )}
