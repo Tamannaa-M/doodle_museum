@@ -1,34 +1,28 @@
 /* ==========================================================================
-   THE DOODLE MUSEUM • DESIGN SYSTEM & STYLES
+   THE DOODLE MUSEUM • BLACK & WHITE SKETCHBOOK & MUSEUM WALL DESIGN
    ========================================================================== */
 
 :root {
-  --wall-bg: #f5f0e6;
-  --wall-plaster: #ece5d8;
-  --wall-shadow: rgba(44, 34, 22, 0.08);
+  --wall-bg: #faf7f2;
+  --wall-plaster: #f2eee6;
+  --wall-shadow: rgba(22, 22, 22, 0.08);
   
-  --ink-primary: #231e19;
-  --ink-secondary: #5c5245;
-  --ink-muted: #8c7e6d;
-  --ink-light: #b5a898;
+  --ink-black: #161616;
+  --ink-dark: #242220;
+  --ink-medium: #544f48;
+  --ink-light: #8e877e;
   
-  --gold-primary: #cba358;
-  --gold-dark: #8c6a28;
-  --gold-light: #edd391;
-  --gold-bright: #ffd978;
+  --accent-gold: #cfa858;
+  --accent-gold-dark: #8c6e33;
+  --accent-gold-light: #fae4a5;
   
-  --wood-dark: #2a2016;
-  --wood-medium: #4e3823;
-  --wood-light: #7c5c3a;
-  
-  --canvas-paper: #ffffff;
-  --mat-cream: #faf5eb;
-  --plaque-brass: #ede4d1;
-  --plaque-border: #c4b59b;
+  --paper-pure: #ffffff;
+  --paper-cream: #fbf9f4;
+  --paper-card: #f6f1e7;
   
   --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-doodle: 'Caveat', cursive, sans-serif;
+  --font-doodle: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
   
   color-scheme: light;
 }
@@ -42,7 +36,7 @@ html, body {
   padding: 0;
   min-height: 100vh;
   background-color: var(--wall-bg);
-  color: var(--ink-primary);
+  color: var(--ink-black);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -58,7 +52,7 @@ html, body {
 }
 
 /* ==========================================================================
-   DOODLE WALL BACKGROUND (Subtle hand-drawn graffiti wallpaper)
+   DARK & PROMINENT DOODLE WALL BACKGROUND (Matching Notebook Sketch)
    ========================================================================== */
 
 .museum-wall-bg {
@@ -66,27 +60,25 @@ html, body {
   width: 100%;
   background-color: var(--wall-bg);
   background-image: 
-    /* Soft plaster texture gradient */
-    radial-gradient(circle at 50% 10%, rgba(255,255,255,0.7) 0%, rgba(245,240,230,0.4) 60%, rgba(230,220,205,0.7) 100%),
-    /* Embedded SVG Doodle Line Art Wallpaper */
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%23231e19' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' opacity='0.08'%3E%3C!-- Cute girl face with bangs --%3E%3Cpath d='M60 70 c0-20 30-30 50-30 c20 0 50 10 50 30 c0 25-10 45-50 45 c-40 0-50-20-50-45 Z'/%3E%3Cpath d='M75 55 q15 15 35 5 q15 15 35 0'/%3E%3Ccircle cx='85' cy='72' r='2' fill='%23231e19'/%3E%3Ccircle cx='135' cy='72' r='2' fill='%23231e19'/%3E%3Cpath d='M105 82 q5 5 10 0'/%3E%3C!-- Flower --%3E%3Ccircle cx='230' cy='60' r='8'/%3E%3Cpath d='M230 40 a12 12 0 0 1 0 24 a12 12 0 0 1 -24 0 a12 12 0 0 1 24 0'/%3E%3Cpath d='M230 60 a12 12 0 0 1 24 0 a12 12 0 0 1 -24 0 a12 12 0 0 1 0 -24'/%3E%3C!-- Sparkles / Stars --%3E%3Cpath d='M340 50 l0 16 m-8 -8 l16 0'/%3E%3Cpath d='M480 90 l0 20 m-10 -10 l20 0'/%3E%3Cpath d='M80 320 l0 14 m-7 -7 l14 0'/%3E%3Cpath d='M520 420 l0 16 m-8 -8 l16 0'/%3E%3C!-- Doodle boy with cap --%3E%3Cpath d='M420 140 c-15-5-25-25-5-35 c20-10 45 5 45 20 c15 5 20 15 10 20'/%3E%3Cpath d='M420 140 c0 20 30 25 40 10'/%3E%3Ccircle cx='435' cy='135' r='2' fill='%23231e19'/%3E%3Ccircle cx='455' cy='135' r='2' fill='%23231e19'/%3E%3Cpath d='M442 143 q4 4 8 0'/%3E%3C!-- Speech bubble: 'art' --%3E%3Cpath d='M280 180 c-10-15 10-25 35-25 c25 0 45 10 35 25 c-5 10-25 15-40 10 l-10 10 l2-10 c-10-2-18-6-22-10 Z'/%3E%3Ctext x='294' y='178' font-family='sans-serif' font-size='12' font-weight='bold' fill='%23231e19' stroke='none'%3Eart!%3C/text%3E%3C!-- Doodle Cat --%3E%3Cpath d='M80 220 l-10-20 l15 8 c15-10 35-10 50 0 l15-8 l-10 20 c5 15-5 35-35 35 c-30 0-40-20-35-35 Z'/%3E%3Ccircle cx='95' cy='218' r='2' fill='%23231e19'/%3E%3Ccircle cx='125' cy='218' r='2' fill='%23231e19'/%3E%3Cpath d='M107 225 l3 3 l3-3'/%3E%3Cpath d='M82 225 l-15-2 m15 5 l-15 4 m65-9 l15-2 m-15 5 l15 4'/%3E%3C!-- Doodle Frame --%3E%3Crect x='480' cy='220' width='60' height='75' rx='6'/%3E%3Crect x='488' cy='228' width='44' height='59' rx='3'/%3E%3Ccircle cx='510' cy='255' r='8'/%3E%3C!-- Cloud --%3E%3Cpath d='M220 340 q-15-15-30 0 q-15 15 0 30 q15 15 40 0 q20 0 20-20 q-10-20-30-10 Z'/%3E%3C!-- Coffee Cup --%3E%3Cpath d='M380 340 l5 30 c2 10 25 10 27 0 l5-30 Z'/%3E%3Cpath d='M417 348 c8 0 8 15 0 15'/%3E%3Cpath d='M388 332 q4-8 0-14 m8 14 q4-8 0-14'/%3E%3C!-- Swirls & hearts --%3E%3Cpath d='M130 460 c0-15 20-15 20 0 c0 15-20 25-20 35'/%3E%3Cpath d='M290 480 c-10-15 5-25 15-10 c10-15 25-5 15 10 c-10 12-15 20-15 20 s-5-8-15-20 Z'/%3E%3C!-- Paintbrush --%3E%3Cpath d='M430 480 l40-40 l10 5 l-40 40 l-8 2 Z'/%3E%3Cpath d='M428 485 c-3 3-5 10-1 12 c4 2 10-3 10-6 Z'/%3E%3C/g%3E%3C/svg%3E");
+    radial-gradient(circle at 50% 15%, rgba(255,255,255,0.85) 0%, rgba(250,247,242,0.4) 60%, rgba(235,228,218,0.75) 100%),
+    url('/doodle-wall-pattern.svg');
+  background-size: 850px 850px;
+  background-repeat: repeat;
   background-attachment: fixed;
   display: flex;
   position: relative;
 }
 
-/* ==========================================================================
-   RESPONSIVE APP LAYOUTS (Desktop / Tablet / Mobile)
-   ========================================================================== */
-
-/* App Container */
 .museum-app-container {
   display: flex;
   width: 100%;
   min-height: 100vh;
 }
 
-/* --- DESKTOP TOOLBAR (Vertical Studio Dock) --- */
+/* ==========================================================================
+   DESKTOP STUDIO TOOLBAR (Vertical Studio Rail > 1024px)
+   ========================================================================== */
+
 .desktop-toolbar {
   display: flex;
   flex-direction: column;
@@ -96,9 +88,9 @@ html, body {
   height: 100vh;
   position: sticky;
   top: 0;
-  background: #1e1b17;
-  background-image: linear-gradient(180deg, #27221c 0%, #1a1714 100%);
-  border-right: 2px solid #3c3429;
+  background: #181715;
+  background-image: linear-gradient(180deg, #24221f 0%, #151412 100%);
+  border-right: 2px solid #38342e;
   box-shadow: 4px 0 25px rgba(0, 0, 0, 0.25);
   padding: 24px 10px;
   gap: 12px;
@@ -111,7 +103,7 @@ html, body {
   width: 4px;
 }
 .desktop-toolbar::-webkit-scrollbar-thumb {
-  background: #4a3e2e;
+  background: #4a4237;
   border-radius: 4px;
 }
 
@@ -148,8 +140,8 @@ html, body {
   width: 54px;
   height: 54px;
   border-radius: 12px;
-  background: #2c2620;
-  border: 1px solid #4a3f32;
+  background: #2a2723;
+  border: 1px solid #484136;
   color: #f0e6d6;
   font-size: 22px;
   display: flex;
@@ -163,7 +155,7 @@ html, body {
 }
 
 .tool-btn:hover {
-  background: #3a3229;
+  background: #3c352c;
   border-color: #7b6951;
   transform: translateY(-2px);
   color: #ffffff;
@@ -191,7 +183,6 @@ html, body {
   margin: 4px 0;
 }
 
-/* Palette Swatches */
 .palette-grid {
   display: grid;
   grid-template-columns: repeat(2, 22px);
@@ -251,7 +242,6 @@ html, body {
   cursor: pointer;
 }
 
-/* Size Slider Container */
 .brush-size-box {
   width: 100%;
   display: flex;
@@ -275,18 +265,147 @@ html, body {
 }
 
 /* ==========================================================================
-   MAIN MUSEUM WORKSPACE
+   MOBILE & TABLET FLOATING BOTTOM STUDIO DOCK
+   ========================================================================== */
+
+.mobile-bottom-dock {
+  display: none; /* Shown via media queries on mobile/tablet */
+}
+
+@media (max-width: 1024px) {
+  .desktop-toolbar {
+    display: none; /* Hide vertical desktop rail */
+  }
+
+  .mobile-bottom-dock {
+    display: flex;
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 24px);
+    max-width: 580px;
+    background: rgba(26, 24, 21, 0.94);
+    backdrop-filter: blur(16px);
+    border: 2px solid #524738;
+    border-radius: 20px;
+    padding: 8px 14px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    z-index: 999;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    box-sizing: border-box;
+    animation: slideUpDock 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slideUpDock {
+    from {
+      transform: translate(-50%, 60px);
+      opacity: 0;
+    }
+    to {
+      transform: translate(-50%, 0);
+      opacity: 1;
+    }
+  }
+
+  .mobile-dock-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mobile-tool-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #332d26;
+    border: 1px solid #4f4435;
+    color: #fff;
+    font-size: 19px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .mobile-tool-btn:active,
+  .mobile-tool-btn.active {
+    background: #544431;
+    border-color: #d4af37;
+    transform: scale(1.08);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+  }
+
+  .mobile-dock-divider {
+    width: 1px;
+    height: 32px;
+    background: #4d4030;
+    margin: 0 2px;
+  }
+
+  .mobile-palette-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .mobile-color-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #1a1714;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s ease;
+  }
+  .mobile-color-dot.selected {
+    outline: 2px solid #ffd978;
+    transform: scale(1.22);
+  }
+
+  .mobile-picker-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #332d26;
+    border: 1px solid #5a4b39;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .mobile-slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #e5d8c3;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .mobile-slider-wrap input {
+    width: 50px;
+    accent-color: #d4af37;
+  }
+}
+
+/* ==========================================================================
+   MAIN WORKSPACE
    ========================================================================== */
 
 .museum-workspace {
   flex: 1;
   min-width: 0;
-  padding: 36px 48px 80px;
+  padding: 36px 48px 120px; /* Extra bottom padding for mobile dock */
   box-sizing: border-box;
   overflow-y: auto;
 }
 
-/* --- HEADER SECTION (Fix for White Color & Mixing Issue) --- */
+/* --- HEADER SECTION --- */
 .museum-header {
   max-width: 1240px;
   margin: 0 auto 36px;
@@ -294,22 +413,24 @@ html, body {
   align-items: flex-end;
   justify-content: space-between;
   gap: 32px;
-  border-bottom: 2px solid #cfc2ad;
-  padding-bottom: 28px;
+  border-bottom: 2px solid #221d18;
+  padding-bottom: 24px;
   position: relative;
 }
 
 .museum-header::after {
-  content: '✦  ✦  ✦';
+  content: '✦  THE DOODLE MUSEUM  ✦';
   position: absolute;
-  bottom: -9px;
+  bottom: -11px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--wall-bg);
   padding: 0 16px;
+  font-family: var(--font-serif);
   font-size: 11px;
-  color: #9f8c70;
-  letter-spacing: 6px;
+  font-weight: 700;
+  color: #1a1714;
+  letter-spacing: 4px;
 }
 
 .header-brand {
@@ -322,9 +443,9 @@ html, body {
   align-items: center;
   gap: 8px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 3.5px;
-  color: #826638;
+  color: #785a26;
   margin-bottom: 6px;
   text-transform: uppercase;
 }
@@ -332,12 +453,11 @@ html, body {
 .museum-title {
   margin: 0;
   font-family: var(--font-serif);
-  font-size: 44px;
-  font-weight: 800;
-  color: #26201a !important; /* CRITICAL: Deep dark vintage ink */
+  font-size: 46px;
+  font-weight: 900;
+  color: #181512 !important;
   letter-spacing: -0.5px;
   line-height: 1.1;
-  text-shadow: 1px 1px 0px rgba(255,255,255,0.8);
 }
 
 .museum-subtitle {
@@ -345,10 +465,9 @@ html, body {
   font-family: var(--font-serif);
   font-size: 16px;
   font-style: italic;
-  color: #635748;
+  color: #484035;
 }
 
-/* Header Save Area */
 .save-artwork-panel {
   display: flex;
   align-items: center;
@@ -357,23 +476,22 @@ html, body {
 }
 
 .artwork-title-input {
-  width: 240px;
+  width: 250px;
   padding: 13px 16px;
-  background: #fbf7ee;
-  border: 1px solid #b8a78e;
+  background: #ffffff;
+  border: 2px solid #241f19;
   border-radius: 6px;
   font-family: var(--font-serif);
   font-size: 15px;
-  color: #241e17;
+  color: #1a1612;
   outline: none;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.15);
   transition: all 0.2s ease;
 }
 
 .artwork-title-input:focus {
-  background: #ffffff;
-  border-color: #947133;
-  box-shadow: 0 0 0 3px rgba(203, 163, 88, 0.25);
+  border-color: #8c6e33;
+  box-shadow: 0 0 0 3px rgba(207, 168, 88, 0.3);
 }
 
 .add-museum-btn {
@@ -381,39 +499,37 @@ html, body {
   align-items: center;
   gap: 8px;
   padding: 13px 22px;
-  background: linear-gradient(180deg, #383026 0%, #241e17 100%);
-  color: #f7eedc;
-  border: 1px solid #5a4b38;
+  background: #181512;
+  color: #ffffff;
+  border: 2px solid #181512;
   border-radius: 6px;
   font-family: var(--font-sans);
-  font-size: 13.5px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   letter-spacing: 0.5px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15);
+  box-shadow: 3px 3px 0px #8c6e33;
   transition: all 0.18s ease;
 }
 
 .add-museum-btn:hover:not(:disabled) {
-  background: linear-gradient(180deg, #463c30 0%, #2e261d 100%);
-  border-color: #d4af37;
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  background: #332a20;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #8c6e33;
 }
 
 .add-museum-btn:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 /* ==========================================================================
-   ARTIST STUDIO & EASEL SECTION
+   ARTIST STUDIO & EASEL (Black & White Sketchbook / Wood Easel)
    ========================================================================== */
 
 .studio-section {
   max-width: 1240px;
-  margin: 0 auto 60px;
+  margin: 0 auto 70px;
   text-align: center;
   position: relative;
 }
@@ -422,11 +538,11 @@ html, body {
   display: inline-flex;
   align-items: center;
   gap: 14px;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 3.5px;
-  color: #8c6e3b;
-  margin-bottom: 20px;
+  color: #1a1714;
+  margin-bottom: 22px;
   text-transform: uppercase;
 }
 
@@ -434,33 +550,30 @@ html, body {
 .studio-ribbon::after {
   content: '';
   display: inline-block;
-  width: 40px;
-  height: 1px;
-  background: #baaa93;
+  width: 50px;
+  height: 2px;
+  background: #1a1714;
 }
 
-/* Masterpiece Canvas Frame (Easel) */
 .canvas-grand-easel {
-  width: 940px;
+  width: 950px;
   max-width: 100%;
   margin: 0 auto;
-  padding: 20px;
-  background: linear-gradient(135deg, #7c572b 0%, #54391b 50%, #3e2810 100%);
-  border: 8px solid #2f1d0a;
-  border-radius: 4px;
+  padding: 18px;
+  background: #1a1612;
+  border: 4px solid #1a1612;
+  border-radius: 8px;
   box-shadow: 
-    inset 0 0 0 3px #d6b36d,
-    inset 0 0 0 7px #704b1e,
-    0 18px 45px rgba(0, 0, 0, 0.35);
+    6px 6px 0px rgba(0,0,0,0.15),
+    0 20px 45px rgba(0, 0, 0, 0.22);
   box-sizing: border-box;
-  position: relative;
 }
 
 .canvas-gold-fillet {
-  padding: 14px;
-  background: linear-gradient(135deg, #e5c378 0%, #b89140 50%, #856122 100%);
-  border: 2px solid #5a3e19;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+  padding: 12px;
+  background: #fbf9f4;
+  border: 2px dashed #3a3227;
+  border-radius: 4px;
   box-sizing: border-box;
 }
 
@@ -472,7 +585,7 @@ html, body {
   background: #ffffff;
   cursor: crosshair;
   touch-action: none;
-  box-shadow: inset 0 0 12px rgba(0,0,0,0.08);
+  border-radius: 2px;
 }
 
 .easel-status-plaque {
@@ -481,23 +594,24 @@ html, body {
   gap: 10px;
   margin-top: 18px;
   padding: 8px 28px;
-  background: #2d261e;
-  border: 1px solid #8e7549;
-  color: #ecd9b8;
-  font-size: 10px;
+  background: #ffffff;
+  border: 2px solid #1a1714;
+  color: #1a1714;
+  font-family: var(--font-doodle);
+  font-size: 18px;
   font-weight: 700;
-  letter-spacing: 2.5px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.18);
-  border-radius: 2px;
+  letter-spacing: 1px;
+  box-shadow: 3px 3px 0px #1a1714;
+  border-radius: 4px;
 }
 
 /* ==========================================================================
-   SALON GALLERY WALL (Authentic Museum Exhibition Wall)
+   HAND-DRAWN SVG DOODLE FRAMES (Matching User Sketchbook & Image 2)
    ========================================================================== */
 
 .exhibition-section {
   max-width: 1300px;
-  margin: 80px auto 0;
+  margin: 70px auto 0;
   position: relative;
 }
 
@@ -512,42 +626,42 @@ html, body {
 
 .exhibition-rule-line {
   flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #b8a993, #b8a993, transparent);
+  height: 2px;
+  background: #181512;
 }
 
 .exhibition-header-text {
-  padding: 0 10px;
+  padding: 0 12px;
 }
 
 .exhibition-subtitle-tag {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 4px;
-  color: #8c6e3b;
-  margin-bottom: 6px;
-  text-transform: uppercase;
+  font-family: var(--font-doodle);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #705524;
+  margin-bottom: 2px;
 }
 
 .exhibition-main-title {
   margin: 0;
   font-family: var(--font-serif);
-  font-size: 38px;
-  font-weight: 700;
-  color: #241d16;
+  font-size: 42px;
+  font-weight: 800;
+  color: #181512;
 }
 
-/* Salon Hanging Wall Layout (Multi-column Masonry) */
+/* Salon Gallery Wall (Multi-column Masonry) */
 .salon-gallery-wall {
   column-count: 3;
-  column-gap: 48px;
+  column-gap: 40px;
   padding: 10px 0;
 }
 
 @media (max-width: 1100px) {
   .salon-gallery-wall {
     column-count: 2;
-    column-gap: 36px;
+    column-gap: 30px;
   }
 }
 
@@ -558,28 +672,28 @@ html, body {
   }
 }
 
-/* Artwork Card (Salon Hanging Item) */
+/* Artwork Card */
 .artwork-card {
   break-inside: avoid;
-  margin-bottom: 54px;
+  margin-bottom: 48px;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
   cursor: pointer;
-  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .artwork-card:hover {
   transform: translateY(-8px) scale(1.02);
 }
 
-/* Decorative Brass Hook & Hanging Wire */
+/* Hanging Mechanism */
 .hanging-mechanism {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: -4px;
+  margin-bottom: -3px;
   z-index: 2;
 }
 
@@ -587,275 +701,118 @@ html, body {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: radial-gradient(circle, #ffe18d 0%, #b88628 80%, #684a10 100%);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-  border: 1px solid #7c5817;
+  background: #181512;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  border: 1px solid #785a26;
 }
 
 .hanging-cord {
-  width: 1px;
-  height: 16px;
-  background: #a2927c;
-  box-shadow: 1px 0 1px rgba(0,0,0,0.1);
+  width: 2px;
+  height: 14px;
+  background: #181512;
 }
 
-/* ==========================================================================
-   VINTAGE FRAME VARIATIONS (Arch, Oval, Gilded Gold, Baroque, Dark Wood)
-   CRITICAL: Image containers MUST clip perfectly to the frame shape
-   ========================================================================== */
-
-.museum-frame-base {
+/* --- DOODLE FRAME COMPONENT STYLES --- */
+.doodle-frame-container {
   width: 100%;
-  box-sizing: border-box;
-  transition: box-shadow 0.25s ease;
   position: relative;
-}
-
-/* 1. ROYAL GILDED ARCH FRAME */
-.frame-royal-arch {
-  border-radius: 140px 140px 10px 10px;
-  background: linear-gradient(145deg, #dfbc6c 0%, #9e7428 50%, #6d4b12 100%);
-  border: 9px solid #583c0e;
-  padding: 16px;
-  box-shadow: 
-    inset 0 0 0 3px #f7de9d,
-    inset 0 0 0 6px #785317,
-    0 16px 32px rgba(0, 0, 0, 0.28);
-}
-.frame-royal-arch .frame-mat {
-  border-radius: 120px 120px 4px 4px;
-  background: #faf4e8;
-  padding: 14px;
-  overflow: hidden;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.22);
-}
-.frame-royal-arch .frame-artwork-mask {
-  border-radius: 110px 110px 2px 2px;
-  overflow: hidden;
-  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  aspect-ratio: 4 / 5;
+  filter: drop-shadow(4px 6px 0px rgba(0, 0, 0, 0.12));
 }
 
-/* 2. VICTORIAN CAMEO OVAL FRAME */
-.frame-cameo-oval {
-  border-radius: 50% / 46%;
-  background: linear-gradient(135deg, #74512c 0%, #462f17 50%, #281a0b 100%);
-  border: 10px solid #231608;
-  padding: 18px;
-  box-shadow: 
-    inset 0 0 0 3px #cca257,
-    inset 0 0 0 6px #5e3f1b,
-    0 16px 32px rgba(0, 0, 0, 0.3);
+.frame-svg-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
 }
-.frame-cameo-oval .frame-mat {
-  border-radius: 50% / 46%;
-  background: #fbf6ec;
-  padding: 14px;
-  overflow: hidden;
-  box-shadow: inset 0 0 8px rgba(0,0,0,0.25);
-}
-.frame-cameo-oval .frame-artwork-mask {
-  border-radius: 50% / 46%;
-  overflow: hidden;
-  background: #ffffff;
+
+.frame-artwork-clipper {
+  width: 100%;
+  height: 100%;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  aspect-ratio: 4 / 5;
-}
-
-/* 3. BAROQUE GRAND GILT (Heavy Gold Rectangle) */
-.frame-baroque-gilt {
-  border-radius: 4px;
-  background: linear-gradient(135deg, #e8c87c 0%, #b88a31 40%, #7d5918 80%, #52370c 100%);
-  border: 12px solid #573a0e;
-  padding: 18px;
-  box-shadow: 
-    inset 0 0 0 3px #fae7b5,
-    inset 0 0 0 6px #785015,
-    inset 0 0 0 9px #d4a948,
-    0 18px 36px rgba(0, 0, 0, 0.32);
-}
-.frame-baroque-gilt .frame-mat {
-  background: #fdfaf3;
-  padding: 16px;
-  overflow: hidden;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
-}
-.frame-baroque-gilt .frame-artwork-mask {
-  overflow: hidden;
   background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 4 / 5;
+  z-index: 1;
 }
 
-/* 4. CURATOR'S DARK MAHOGANY WITH LINEN MAT */
-.frame-dark-mahogany {
-  border-radius: 3px;
-  background: linear-gradient(135deg, #443020 0%, #291c12 100%);
-  border: 10px solid #1c130b;
-  padding: 16px;
-  box-shadow: 
-    inset 0 0 0 2px #9c7b4c,
-    0 16px 30px rgba(0, 0, 0, 0.28);
-}
-.frame-dark-mahogany .frame-mat {
-  background: #f7f1e4;
-  padding: 18px;
-  border: 1px solid #ded3be;
-  overflow: hidden;
-  box-shadow: inset 0 1px 4px rgba(0,0,0,0.15);
-}
-.frame-dark-mahogany .frame-artwork-mask {
-  overflow: hidden;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 1 / 1;
-}
-
-/* 5. FLORENTINE WIDE LANDSCAPE FRAME */
-.frame-florentine-wide {
-  border-radius: 4px;
-  background: linear-gradient(135deg, #cfa856 0%, #916c27 100%);
-  border: 8px solid #4a330e;
-  padding: 14px;
-  box-shadow: 
-    inset 0 0 0 3px #f5db99,
-    0 14px 28px rgba(0, 0, 0, 0.24);
-}
-.frame-florentine-wide .frame-mat {
-  background: #fbf7ee;
-  padding: 12px;
-  overflow: hidden;
-}
-.frame-florentine-wide .frame-artwork-mask {
-  overflow: hidden;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 5 / 4;
-}
-
-/* 6. PETITE ANTIQUE SQUARE FRAME */
-.frame-petite-antique {
-  border-radius: 4px;
-  background: linear-gradient(135deg, #967448 0%, #5d4220 100%);
-  border: 8px solid #382510;
-  padding: 12px;
-  box-shadow: 
-    inset 0 0 0 2px #dfbe7d,
-    0 12px 24px rgba(0,0,0,0.22);
-}
-.frame-petite-antique .frame-mat {
-  background: #faf4e8;
-  padding: 10px;
-  overflow: hidden;
-}
-.frame-petite-antique .frame-artwork-mask {
-  overflow: hidden;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 1 / 1;
-}
-
-/* Artwork Image inside Frame */
-.gallery-doodle-img {
+.frame-inner-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  display: block;
   background: #ffffff;
+  display: block;
   transition: transform 0.3s ease;
 }
-.artwork-card:hover .gallery-doodle-img {
-  transform: scale(1.04);
+
+.artwork-card:hover .frame-inner-img {
+  transform: scale(1.05);
 }
 
-/* --- MUSEUM WALL PLAQUE --- */
+/* --- MUSEUM WALL PLAQUE (Hand-Drawn Sketchbook Style) --- */
 .museum-wall-plaque {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-top: 14px;
-  padding: 9px 20px;
-  background: #f4ecde;
-  border: 1px solid #c9baa1;
-  border-radius: 2px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.7);
+  padding: 8px 18px;
+  background: #ffffff;
+  border: 2px solid #181512;
+  border-radius: 4px;
+  box-shadow: 3px 3px 0px #181512;
   max-width: 220px;
   text-align: center;
   position: relative;
 }
 
-.museum-wall-plaque::before,
-.museum-wall-plaque::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #9b876a;
-  transform: translateY(-50%);
-}
-.museum-wall-plaque::before { left: 6px; }
-.museum-wall-plaque::after { right: 6px; }
-
 .plaque-title {
   font-family: var(--font-serif);
   font-size: 15px;
   font-weight: 700;
-  color: #2b2319;
+  color: #181512;
   line-height: 1.2;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   word-break: break-word;
 }
 
 .plaque-metadata {
-  font-size: 8.5px;
+  font-family: var(--font-doodle);
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 2px;
-  color: #7d6e59;
-  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #5e5241;
 }
 
-/* Empty Gallery / Loading states */
+/* Empty Gallery */
 .gallery-empty-state {
   text-align: center;
   padding: 80px 20px;
-  color: #6d5e4b;
+  color: #4e4436;
 }
-
 .empty-icon {
-  font-size: 48px;
-  margin-bottom: 14px;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+  font-size: 52px;
+  margin-bottom: 12px;
 }
-
 .empty-text {
-  font-family: var(--font-serif);
-  font-size: 18px;
-  font-style: italic;
+  font-family: var(--font-doodle);
+  font-size: 24px;
+  font-weight: 700;
 }
 
 /* ==========================================================================
-   MODAL ARTWORK VIEWER (High-Res Spotlight)
+   MODAL SPOTLIGHT VIEWER
    ========================================================================== */
 
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(18, 14, 10, 0.85);
+  background: rgba(18, 16, 14, 0.88);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -863,7 +820,7 @@ html, body {
   padding: 24px;
   box-sizing: border-box;
   z-index: 1000;
-  animation: fadeInModal 0.25s ease-out;
+  animation: fadeInModal 0.2s ease-out;
 }
 
 @keyframes fadeInModal {
@@ -873,14 +830,14 @@ html, body {
 
 .modal-spotlight-box {
   position: relative;
-  max-width: 860px;
+  max-width: 840px;
   width: 100%;
   max-height: 92vh;
-  background: #f5eedf;
-  border: 3px solid #8e7244;
-  border-radius: 6px;
+  background: #faf7f0;
+  border: 4px solid #181512;
+  border-radius: 8px;
   padding: 32px;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6), inset 0 0 0 1px #fae6b8;
+  box-shadow: 10px 10px 0px #181512, 0 25px 60px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -894,27 +851,27 @@ html, body {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: #2b2319;
-  border: 1px solid #9b8156;
-  color: #f7eedc;
+  background: #181512;
+  border: 2px solid #181512;
+  color: #ffffff;
   font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease;
+  box-shadow: 2px 2px 0px #785a26;
+  transition: transform 0.15s ease;
 }
 .modal-close-btn:hover {
-  transform: scale(1.1);
-  background: #463929;
+  transform: scale(1.15);
 }
 
 .modal-frame-wrapper {
-  padding: 16px;
-  background: linear-gradient(135deg, #b88a31 0%, #684812 100%);
-  border: 6px solid #3b280b;
-  border-radius: 4px;
-  box-shadow: inset 0 0 0 2px #ffd875, 0 14px 30px rgba(0,0,0,0.3);
+  padding: 14px;
+  background: #ffffff;
+  border: 3px solid #181512;
+  border-radius: 6px;
+  box-shadow: 5px 5px 0px #181512;
   max-width: 100%;
   box-sizing: border-box;
 }
@@ -926,89 +883,33 @@ html, body {
   width: 100%;
   object-fit: contain;
   background: #ffffff;
-  border-radius: 2px;
 }
 
 .modal-artwork-title {
   margin: 22px 0 6px;
   font-family: var(--font-serif);
-  font-size: 28px;
-  font-weight: 700;
-  color: #241d15;
+  font-size: 30px;
+  font-weight: 800;
+  color: #181512;
   text-align: center;
 }
 
 .modal-artwork-sub {
-  font-size: 10px;
+  font-family: var(--font-doodle);
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 3px;
-  color: #7b6951;
+  letter-spacing: 1.5px;
+  color: #635542;
   text-transform: uppercase;
 }
 
 /* ==========================================================================
-   TABLET RESPONSIVENESS (iPad 768px - 1024px)
+   RESPONSIVE OVERRIDES (Tablet & Phone)
    ========================================================================== */
 
 @media (max-width: 1024px) {
-  .museum-app-container {
-    flex-direction: column;
-  }
-  
-  .desktop-toolbar {
-    width: 100%;
-    min-width: unset;
-    height: auto;
-    position: sticky;
-    top: 0;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    padding: 12px 18px;
-    gap: 10px;
-    border-right: none;
-    border-bottom: 2px solid #4a3e2e;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
-  }
-
-  .toolbar-crest {
-    width: 42px;
-    height: 42px;
-    font-size: 20px;
-  }
-
-  .tool-btn {
-    width: 48px;
-    height: 48px;
-    font-size: 20px;
-  }
-
-  .palette-grid {
-    grid-template-columns: repeat(3, 20px);
-    gap: 6px;
-  }
-
-  .toolbar-divider {
-    width: 1px;
-    height: 36px;
-    margin: 0 4px;
-    background: #564736;
-  }
-
-  .brush-size-box {
-    width: auto;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    padding-top: 0;
-  }
-
-  .brush-slider {
-    width: 60px;
-  }
-
   .museum-workspace {
-    padding: 24px 28px 60px;
+    padding: 24px 20px 120px;
   }
 
   .museum-header {
@@ -1024,80 +925,17 @@ html, body {
 
   .canvas-grand-easel {
     width: 100%;
-    padding: 14px;
-    border-width: 6px;
-  }
-
-  .canvas-gold-fillet {
-    padding: 10px;
+    padding: 12px;
   }
 }
 
-/* ==========================================================================
-   MOBILE RESPONSIVENESS (Phone < 768px)
-   ========================================================================== */
-
 @media (max-width: 767px) {
-  .desktop-toolbar {
-    padding: 10px 8px;
-    gap: 6px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .toolbar-crest {
-    display: none;
-  }
-
-  .toolbar-section-label {
-    display: none;
-  }
-
-  .tool-btn {
-    width: 42px;
-    height: 42px;
-    border-radius: 8px;
-    font-size: 17px;
-  }
-  .tool-btn-caption {
-    display: none;
-  }
-
-  .palette-grid {
-    grid-template-columns: repeat(3, 18px);
-    gap: 4px;
-  }
-
-  .color-swatch {
-    width: 18px;
-    height: 18px;
-  }
-
-  .custom-picker-wrapper {
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
-  }
-
-  .brush-size-box {
-    flex-direction: column;
-    gap: 2px;
-  }
-  .brush-slider {
-    width: 50px;
-    height: 14px;
-  }
-  .brush-indicator {
-    font-size: 8px;
-  }
-
   .museum-workspace {
-    padding: 16px 14px 50px;
+    padding: 16px 14px 130px; /* Generous space for mobile bottom dock */
   }
 
   .museum-title {
-    font-size: 32px;
+    font-size: 34px;
   }
 
   .museum-subtitle {
@@ -1107,7 +945,7 @@ html, body {
   .save-artwork-panel {
     flex-direction: column;
     width: 100%;
-    gap: 8px;
+    gap: 10px;
   }
 
   .artwork-title-input {
@@ -1118,12 +956,12 @@ html, body {
   .add-museum-btn {
     width: 100%;
     justify-content: center;
-    padding: 12px;
+    padding: 13px;
   }
 
   .canvas-grand-easel {
-    padding: 10px;
-    border-width: 4px;
+    padding: 8px;
+    border-width: 3px;
   }
 
   .canvas-gold-fillet {
@@ -1131,11 +969,11 @@ html, body {
   }
 
   .exhibition-main-title {
-    font-size: 28px;
+    font-size: 30px;
   }
 
   .artwork-card {
-    margin-bottom: 40px;
+    margin-bottom: 38px;
   }
 }
 
@@ -1144,9 +982,9 @@ html, body {
   text-align: center;
   margin-top: 70px;
   padding-top: 24px;
-  border-top: 1px solid #cfc2ad;
-  color: #8c7e6c;
-  font-family: var(--font-serif);
-  font-size: 14px;
-  font-style: italic;
+  border-top: 2px solid #181512;
+  color: #4e4436;
+  font-family: var(--font-doodle);
+  font-size: 20px;
+  font-weight: 700;
 }

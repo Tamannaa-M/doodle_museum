@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from './supabaseClient'
+import { DoodleFrame } from './DoodleFrames'
 
 function App() {
   const canvasRef = useRef(null)
@@ -20,25 +21,27 @@ function App() {
   // -------------------------
   const presetColors = [
     '#000000', // Ink Black
-    '#D98C9B', // Dusty Rose
+    '#D98C9B', // Dusty Pink
     '#A88BC7', // Lavender
-    '#82B8D8', // Soft Sky Blue
-    '#91A88C', // Sage Green
-    '#E7A77B', // Warm Peach
+    '#82B8D8', // Soft Blue
+    '#91A88C', // Sage
+    '#E7A77B', // Peach
     '#8D5B4C', // Terracotta
-    '#CBA358', // Antique Gold
+    '#CBA358', // Vintage Gold
   ]
 
   // -------------------------
-  // VINTAGE FRAME STYLES
+  // VINTAGE HAND-DRAWN DOODLE FRAME STYLES
   // -------------------------
-  const frameClassList = [
-    'frame-royal-arch',       // Cathedral Arch with Gold Leaf
-    'frame-cameo-oval',       // Victorian Cameo Oval with Bronze Trim
-    'frame-baroque-gilt',     // Grand Gilded Baroque Rectangle
-    'frame-dark-mahogany',    // Curator's Dark Mahogany with Linen Mat
-    'frame-florentine-wide',  // Florentine Wide Landscape Gilded Frame
-    'frame-petite-antique',   // Petite Square Antique Gold Frame
+  const frameTypeList = [
+    'scallop-oval',   // Ruffled Pie-Crust Oval from User Notebook Sketch
+    'baroque-scroll', // Grand Ornate Scrollwork Rectangle
+    'leafy-wreath',   // Botanical Leaf Wreath Oval
+    'striped-bevel',  // Engraved Striped / Hatching Bevel Rectangle
+    'wavy-ribbon',    // Wavy Ribbon Contour Frame
+    'sunray-cameo',   // Sunburst Radial Cameo Oval
+    'classic-mitred', // Crisp Mitred Double Line Frame
+    'tall-flourish',  // Tall Portrait Baroque Flourish Frame
   ]
 
   // -------------------------
@@ -96,7 +99,7 @@ function App() {
   }
 
   // -------------------------
-  // DRAWING LOGIC (Pointer + Touch)
+  // DRAWING LOGIC (Pointer + Touch Friendly)
   // -------------------------
   function startDrawing(e) {
     const canvas = canvasRef.current
@@ -114,7 +117,7 @@ function App() {
       try {
         canvas.setPointerCapture(e.pointerId)
       } catch (err) {
-        // pointer capture fallback
+        // fallback
       }
     }
   }
@@ -159,7 +162,7 @@ function App() {
       try {
         canvas.releasePointerCapture(e.pointerId)
       } catch (err) {
-        // ignore
+        // fallback
       }
     }
   }
@@ -322,7 +325,7 @@ function App() {
       <div className="museum-app-container">
 
         {/* ======================================================
-            STUDIO TOOLBAR (Responsive: Vertical Desktop / Horizontal Mobile)
+            1. DESKTOP STUDIO SIDEBAR (Shown on screen > 1024px)
             ====================================================== */}
         <aside className="desktop-toolbar" aria-label="Artist Tools">
           <div className="toolbar-crest" title="The Doodle Museum Studio">
@@ -426,11 +429,11 @@ function App() {
         </aside>
 
         {/* ======================================================
-            MAIN MUSEUM WORKSPACE
+            2. MAIN MUSEUM WORKSPACE (Header, Easel, Exhibition Wall)
             ====================================================== */}
         <main className="museum-workspace">
 
-          {/* --- MUSEUM HEADER --- */}
+          {/* --- TOP HEADER --- */}
           <header className="museum-header">
             <div className="header-brand">
               <div className="museum-badge">
@@ -444,7 +447,7 @@ function App() {
               </p>
             </div>
 
-            {/* SAVE WORKSPACE CONTROLS */}
+            {/* ARTWORK SAVE CONTROLS */}
             <div className="save-artwork-panel">
               <input
                 className="artwork-title-input"
@@ -464,13 +467,13 @@ function App() {
             </div>
           </header>
 
-          {/* --- ARTIST STUDIO / EASEL --- */}
+          {/* --- ARTIST STUDIO EASEL --- */}
           <section className="studio-section" aria-label="Artist Studio">
             <div className="studio-ribbon">
               <span>✦</span> ARTIST'S STUDIO <span>✦</span>
             </div>
 
-            {/* GRAND WOODEN EASEL WITH GOLD FILLET */}
+            {/* GRAND WOODEN EASEL */}
             <div className="canvas-grand-easel">
               <div className="canvas-gold-fillet">
                 <canvas
@@ -492,7 +495,7 @@ function App() {
             </div>
           </section>
 
-          {/* --- SALON EXHIBITION WALL --- */}
+          {/* --- SALON EXHIBITION GALLERY WALL --- */}
           <section className="exhibition-section" aria-label="Museum Exhibition">
             <div className="exhibition-title-banner">
               <div className="exhibition-rule-line"></div>
@@ -522,8 +525,7 @@ function App() {
             ) : (
               <div className="salon-gallery-wall">
                 {doodles.map((doodle, index) => {
-                  const frameClass =
-                    frameClassList[index % frameClassList.length]
+                  const frameType = frameTypeList[index % frameTypeList.length]
 
                   return (
                     <article
@@ -532,27 +534,20 @@ function App() {
                       onClick={() => setSelectedDoodle(doodle)}
                       title={`Inspect "${doodle.title || 'Untitled'}"`}
                     >
-                      {/* Brass Hook & Hanging Cord */}
+                      {/* Brass Nail & Hanging Cord */}
                       <div className="hanging-mechanism">
                         <div className="brass-nail"></div>
                         <div className="hanging-cord"></div>
                       </div>
 
-                      {/* Vintage Frame with Mat & Image Mask */}
-                      <div className={`museum-frame-base ${frameClass}`}>
-                        <div className="frame-mat">
-                          <div className="frame-artwork-mask">
-                            <img
-                              src={doodle.image_url}
-                              alt={doodle.title || 'Museum Doodle'}
-                              className="gallery-doodle-img"
-                              loading="lazy"
-                            />
-                          </div>
-                        </div>
-                      </div>
+                      {/* Hand-Drawn Black & White SVG Frame */}
+                      <DoodleFrame
+                        frameType={frameType}
+                        imageUrl={doodle.image_url}
+                        title={doodle.title || 'Doodle'}
+                      />
 
-                      {/* Museum Brass Wall Plaque */}
+                      {/* Hand-Drawn Museum Wall Plaque */}
                       <div className="museum-wall-plaque">
                         <div className="plaque-title">
                           {doodle.title || 'Untitled Doodle'}
@@ -578,7 +573,93 @@ function App() {
         </main>
 
         {/* ======================================================
-            MODAL SPOTLIGHT VIEWER (Zoom in on Click)
+            3. MOBILE & TABLET FLOATING BOTTOM DOCK
+               (Always pinned at screen bottom on phone & tablet)
+            ====================================================== */}
+        <nav className="mobile-bottom-dock" aria-label="Mobile Drawing Tools">
+          {/* Action Tools */}
+          <div className="mobile-dock-group">
+            <button
+              className={`mobile-tool-btn ${tool === 'pen' ? 'active' : ''}`}
+              onClick={() => setTool('pen')}
+              title="Pen"
+              aria-label="Pen"
+            >
+              ✏️
+            </button>
+            <button
+              className={`mobile-tool-btn ${tool === 'eraser' ? 'active' : ''}`}
+              onClick={() => setTool('eraser')}
+              title="Eraser"
+              aria-label="Eraser"
+            >
+              🧹
+            </button>
+            <button
+              className="mobile-tool-btn"
+              onClick={undo}
+              title="Undo"
+              aria-label="Undo"
+            >
+              ↩️
+            </button>
+            <button
+              className="mobile-tool-btn"
+              onClick={clearCanvas}
+              title="Clear Canvas"
+              aria-label="Clear"
+            >
+              🗑️
+            </button>
+          </div>
+
+          <div className="mobile-dock-divider"></div>
+
+          {/* Palette Swatches */}
+          <div className="mobile-palette-row">
+            {presetColors.slice(0, 4).map((presetColor) => (
+              <button
+                key={presetColor}
+                onClick={() => selectColor(presetColor)}
+                className={`mobile-color-dot ${
+                  color === presetColor && tool === 'pen' ? 'selected' : ''
+                }`}
+                style={{ backgroundColor: presetColor }}
+                aria-label={`Color ${presetColor}`}
+              />
+            ))}
+
+            {/* Custom Color Picker */}
+            <label className="mobile-picker-btn" title="More Colors">
+              🎨
+              <input
+                type="color"
+                value={color}
+                onChange={(e) => selectColor(e.target.value)}
+                className="hidden-color-input"
+              />
+            </label>
+          </div>
+
+          <div className="mobile-dock-divider"></div>
+
+          {/* Brush Size Slider */}
+          <div className="mobile-slider-wrap">
+            <span>●</span>
+            <input
+              type="range"
+              min="1"
+              max="40"
+              value={brushSize}
+              onChange={(e) => setBrushSize(Number(e.target.value))}
+              title={`Brush: ${brushSize}px`}
+            />
+            <span>{brushSize}</span>
+          </div>
+        </nav>
+
+        {/* ======================================================
+            4. MODAL SPOTLIGHT VIEWER (Zoom in on Click)
             ====================================================== */}
         {selectedDoodle && (
           <div
