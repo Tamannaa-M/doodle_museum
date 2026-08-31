@@ -4,7 +4,7 @@ import { supabase } from './supabaseClient'
 function App() {
   const canvasRef = useRef(null)
   const historyRef = useRef([])
-
+  const [hoveredDoodle, setHoveredDoodle] = useState(null)
   const [selectedDoodle, setSelectedDoodle] = useState(null)
   const [doodles, setDoodles] = useState([])
   const [loadingGallery, setLoadingGallery] = useState(true)
@@ -14,19 +14,6 @@ function App() {
   const [tool, setTool] = useState('pen')
   const [color, setColor] = useState('#000000')
   const [brushSize, setBrushSize] = useState(5)
-
-  // -------------------------
-  // PRESET COLOURS
-  // -------------------------
-
-  const presetColors = [
-    '#000000', // Ink black
-    '#D98C9B', // Dusty pink
-    '#A88BC7', // Lavender
-    '#82B8D8', // Soft blue
-    '#91A88C', // Sage
-    '#E7A77B', // Peach
-  ]
 
   // -------------------------
   // LOAD GALLERY
@@ -49,6 +36,8 @@ function App() {
       setLoadingGallery(false)
       return
     }
+
+    console.log('Doodles received:', data)
 
     setDoodles(data || [])
     setLoadingGallery(false)
@@ -102,10 +91,6 @@ function App() {
     ctx.moveTo(x, y)
 
     setIsDrawing(true)
-
-    if (canvas.setPointerCapture) {
-      canvas.setPointerCapture(e.pointerId)
-    }
   }
 
   function draw(e) {
@@ -115,7 +100,7 @@ function App() {
     const ctx = canvas.getContext('2d')
     const { x, y } = getCanvasCoordinates(e)
 
-    ctx.lineWidth = Number(brushSize)
+    ctx.lineWidth = brushSize
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
 
@@ -130,23 +115,14 @@ function App() {
     ctx.stroke()
   }
 
-  function stopDrawing(e) {
+  function stopDrawing() {
     if (!isDrawing) return
 
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
 
     ctx.closePath()
-    ctx.globalCompositeOperation = 'source-over'
-
     setIsDrawing(false)
-
-    if (
-      canvas.releasePointerCapture &&
-      canvas.hasPointerCapture?.(e.pointerId)
-    ) {
-      canvas.releasePointerCapture(e.pointerId)
-    }
   }
 
   // -------------------------
@@ -184,15 +160,6 @@ function App() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.globalCompositeOperation = 'source-over'
-  }
-
-  // -------------------------
-  // SELECT COLOUR
-  // -------------------------
-
-  function selectColor(newColor) {
-    setColor(newColor)
-    setTool('pen')
   }
 
   // -------------------------
@@ -351,7 +318,7 @@ function App() {
   return (
     <div style={styles.app}>
 
-      {/* MOBILE/TABLET TOOLBAR */}
+      {/* LEFT ARTIST TOOLBAR */}
 
       <aside style={styles.toolbar}>
 
@@ -362,8 +329,6 @@ function App() {
         <div style={styles.toolLabel}>
           ARTIST
         </div>
-
-        {/* PEN */}
 
         <button
           style={
@@ -377,8 +342,6 @@ function App() {
           ✏️
         </button>
 
-        {/* ERASER */}
-
         <button
           style={
             tool === 'eraser'
@@ -391,8 +354,6 @@ function App() {
           🧹
         </button>
 
-        {/* UNDO */}
-
         <button
           style={styles.toolButton}
           onClick={undo}
@@ -400,8 +361,6 @@ function App() {
         >
           ↩️
         </button>
-
-        {/* CLEAR */}
 
         <button
           style={styles.toolButton}
@@ -413,84 +372,31 @@ function App() {
 
         <div style={styles.separator}></div>
 
-        {/* PRESET COLOURS */}
+        <label style={styles.colorLabel}>
+          <span>🎨</span>
 
-        <div style={styles.colorSection}>
+          <input
+            type="color"
+            value={color}
+            onChange={(e) => setColor(e.target.value)}
+          />
+        </label>
 
-          <div style={styles.colorSectionTitle}>
-            COLORS
-          </div>
+        <label style={styles.sizeLabel}>
+          <span>📏</span>
 
-          <div style={styles.colorPalette}>
+          <input
+            type="range"
+            min="1"
+            max="40"
+            value={brushSize}
+            onChange={(e) =>
+              setBrushSize(Number(e.target.value))
+            }
+          />
 
-            {presetColors.map((presetColor) => (
-              <button
-                key={presetColor}
-                onClick={() => selectColor(presetColor)}
-                title={presetColor}
-                style={{
-                  ...styles.colorButton,
-                  background: presetColor,
-                  ...(color === presetColor && tool === 'pen'
-                    ? styles.selectedColor
-                    : {}),
-                }}
-              />
-            ))}
-
-          </div>
-
-          {/* CUSTOM COLOUR WHEEL */}
-
-          <label
-            style={styles.customColorButton}
-            title="Custom colour"
-          >
-            🎨
-
-            <input
-              type="color"
-              value={color}
-              onChange={(e) => selectColor(e.target.value)}
-              style={styles.colorPicker}
-            />
-          </label>
-
-        </div>
-
-        <div style={styles.separator}></div>
-
-        {/* BRUSH SIZE */}
-
-        <div style={styles.sizeControl}>
-
-  <div style={styles.sizeTitle}>
-    BRUSH
-  </div>
-
-  <div style={styles.sizeRow}>
-
-    <span style={styles.sizeIcon}>•</span>
-
-    <input
-      type="range"
-      min="1"
-      max="40"
-      step="1"
-      value={brushSize}
-      onChange={(e) => setBrushSize(Number(e.target.value))}
-      style={styles.slider}
-    />
-
-    <span style={styles.sizeIcon}>●</span>
-
-  </div>
-
-  <div style={styles.sizeValue}>
-    {brushSize}px
-  </div>
-
-</div>
+          <span>{brushSize}px</span>
+        </label>
 
       </aside>
 
@@ -554,8 +460,6 @@ function App() {
             <span>✦</span>
           </div>
 
-          {/* CANVAS */}
-
           <div style={styles.canvasOuterFrame}>
 
             <div style={styles.canvasInnerFrame}>
@@ -565,10 +469,10 @@ function App() {
                 width={1000}
                 height={650}
                 style={styles.canvas}
-                onPointerDown={startDrawing}
-                onPointerMove={draw}
-                onPointerUp={stopDrawing}
-                onPointerCancel={stopDrawing}
+                onMouseDown={startDrawing}
+                onMouseMove={draw}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
               />
 
             </div>
@@ -610,7 +514,6 @@ function App() {
           {loadingGallery ? (
 
             <div style={styles.emptyMessage}>
-
               <div style={styles.loadingIcon}>
                 🖼️
               </div>
@@ -618,7 +521,6 @@ function App() {
               <p>
                 Preparing the exhibition...
               </p>
-
             </div>
 
           ) : doodles.length === 0 ? (
@@ -643,9 +545,16 @@ function App() {
 
                 <div
                   key={doodle.id}
-                  style={styles.artwork}
+                  style={{
+                  ...styles.artwork,
+                  ...(hoveredDoodle === doodle.id ? styles.artworkHover : {}),
+                  }}
                   onClick={() => setSelectedDoodle(doodle)}
+                  onMouseEnter={() => setHoveredDoodle(doodle.id)}
+                  onMouseLeave={() => setHoveredDoodle(null)}
                 >
+
+                  {/* FRAME */}
 
                   <div
                     style={{
@@ -668,6 +577,8 @@ function App() {
 
                   </div>
 
+
+                  {/* PLAQUE */}
 
                   <div style={styles.plaque}>
 
@@ -699,7 +610,9 @@ function App() {
       </main>
 
 
-      {/* ARTWORK VIEWER */}
+      {/* ==================================================
+          ARTWORK VIEWER MODAL
+          ================================================== */}
 
       {selectedDoodle && (
 
@@ -764,28 +677,26 @@ const styles = {
     color: '#29251f',
   },
 
+
   // -------------------------
   // TOOLBAR
   // -------------------------
 
   toolbar: {
-    width: '110px',
-    minWidth: '110px',
-    height: '100vh',
+    width: '90px',
+    minWidth: '90px',
+    minHeight: '100vh',
     background: '#211f1b',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    padding: '20px 10px',
+    padding: '22px 10px',
     gap: '12px',
     boxSizing: 'border-box',
     boxShadow: '4px 0 15px rgba(0,0,0,0.18)',
     position: 'sticky',
     top: 0,
     alignSelf: 'flex-start',
-    zIndex: 20,
   },
 
   toolbarLogo: {
@@ -804,7 +715,7 @@ const styles = {
   toolLabel: {
     fontSize: '9px',
     letterSpacing: '2px',
-    color: '#c9bfae',
+    color: '#fdfbfb',
     marginBottom: '5px',
   },
 
@@ -817,6 +728,7 @@ const styles = {
     color: '#fff',
     fontSize: '21px',
     cursor: 'pointer',
+    boxShadow: '0 3px 7px rgba(0,0,0,0.2)',
   },
 
   activeButton: {
@@ -828,6 +740,7 @@ const styles = {
     color: '#fff',
     fontSize: '21px',
     cursor: 'pointer',
+    boxShadow: '0 0 10px rgba(201,164,92,0.3)',
   },
 
   separator: {
@@ -836,124 +749,39 @@ const styles = {
     margin: '5px 0',
   },
 
-  // -------------------------
-  // COLOURS
-  // -------------------------
-
-  colorSection: {
-    width: '70px',
+  colorLabel: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '8px',
+    gap: '5px',
+    fontSize: '18px',
+    color: '#fff',
   },
 
-  colorSectionTitle: {
-    fontSize: '8px',
-    letterSpacing: '1.5px',
+  sizeLabel: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '10px',
     color: '#c9bfae',
   },
 
-  colorPalette: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, 22px)',
-    gap: '7px',
-    justifyContent: 'center',
-  },
-
-  colorButton: {
-    width: '22px',
-    height: '22px',
-    borderRadius: '50%',
-    border: '2px solid #211f1b',
-    outline: '1px solid #514c43',
-    cursor: 'pointer',
-    padding: 0,
-  },
-
-  selectedColor: {
-    outline: '2px solid #f2dfad',
-    transform: 'scale(1.15)',
-  },
-
-  customColorButton: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '50%',
-    border: '1px solid #514c43',
-    background: '#302d27',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '17px',
-    cursor: 'pointer',
-    position: 'relative',
-  },
-
-  colorPicker: {
-    position: 'absolute',
-    inset: 0,
-    width: '100%',
-    height: '100%',
-    opacity: 0,
-    cursor: 'pointer',
-  },
-
-  sizeControl: {
-  width: '90px',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: '6px',
-  marginTop: '10px',
-  paddingBottom: '20px',
-},
-
-sizeTitle: {
-  fontSize: '9px',
-  letterSpacing: '2px',
-  color: '#c9bfae',
-},
-
-sizeRow: {
-  width: '90px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '4px',
-},
-
-sizeIcon: {
-  color: '#e8dfd0',
-  fontSize: '10px',
-},
-
-slider: {
-  width: '65px',
-  height: '20px',
-  cursor: 'pointer',
-  accentColor: '#c9a45c',
-},
-
-sizeValue: {
-  fontSize: '9px',
-  color: '#c9bfae',
-},
 
   // -------------------------
   // MAIN
   // -------------------------
 
   workspace: {
-      flex: 1,
-      minWidth: 0,
-      padding: '34px 45px 60px',
-      boxSizing: 'border-box',
-      overflow: 'auto',
+  flex: 1,
+  minWidth: 0,
+  padding: '34px clamp(18px, 4vw, 45px) 60px',
+  boxSizing: 'border-box',
+  overflow: 'auto',
   },
 
   header: {
-  maxWidth: '1200px',
+    maxWidth: '1200px',
     margin: '0 auto 35px',
     display: 'flex',
     alignItems: 'flex-end',
@@ -966,7 +794,7 @@ sizeValue: {
   museumSmallTitle: {
     fontSize: '10px',
     letterSpacing: '3px',
-    color: '#806d4d',
+    color: '#91774b',
     marginBottom: '8px',
     fontWeight: 'bold',
   },
@@ -995,14 +823,14 @@ sizeValue: {
   titleInput: {
     width: '220px',
     padding: '12px 14px',
-    border: '1px solid #b8aa94',
+    border: '1px solid #a6a097',
     borderRadius: '4px',
     background: '#f8f3ea',
-    color: '#29251f',
     fontFamily: 'Georgia, serif',
     fontSize: '14px',
     outline: 'none',
     boxSizing: 'border-box',
+    color: '#302b24',
   },
 
   saveButton: {
@@ -1014,7 +842,9 @@ sizeValue: {
     fontFamily: 'Georgia, serif',
     fontSize: '13px',
     cursor: 'pointer',
+    boxShadow: '0 3px 8px rgba(0,0,0,0.2)',
   },
+
 
   // -------------------------
   // STUDIO
@@ -1064,7 +894,6 @@ sizeValue: {
     aspectRatio: '1000 / 650',
     background: '#ffffff',
     cursor: 'crosshair',
-    touchAction: 'none',
   },
 
   studioPlaque: {
@@ -1075,7 +904,9 @@ sizeValue: {
     color: '#e8d8b7',
     fontSize: '9px',
     letterSpacing: '2px',
+    boxShadow: '0 3px 7px rgba(0,0,0,0.18)',
   },
+
 
   // -------------------------
   // EXHIBITION
@@ -1115,17 +946,16 @@ sizeValue: {
   },
 
   galleryGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '75px 55px',
-    alignItems: 'start',
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+  gap: '70px 45px',
+  alignItems: 'start',
   },
 
   artwork: {
-    textAlign: 'center',
-    cursor: 'pointer',
+  textAlign: 'center',
+  transition: 'transform 0.25s ease, filter 0.25s ease',
   },
-
   frame: {
     width: '100%',
     aspectRatio: '4 / 5',
@@ -1173,6 +1003,12 @@ sizeValue: {
     objectFit: 'contain',
     background: '#fff',
   },
+  artworkHover: {
+  transform: 'translateY(-8px)',
+  transition: 'transform 0.25s ease',
+  cursor: 'pointer',
+  filter: 'drop-shadow(0 15px 18px rgba(0,0,0,0.18))',
+  },
 
   plaque: {
     display: 'inline-block',
@@ -1219,8 +1055,9 @@ sizeValue: {
     fontStyle: 'italic',
   },
 
+
   // -------------------------
-  // MODAL
+  // ARTWORK VIEWER
   // -------------------------
 
   modalOverlay: {
@@ -1236,14 +1073,16 @@ sizeValue: {
   },
 
   modal: {
-    position: 'relative',
-    maxWidth: '850px',
-    maxHeight: '90vh',
-    background: '#e8dfd0',
-    padding: '30px',
-    textAlign: 'center',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
-    boxSizing: 'border-box',
+  position: 'relative',
+  maxWidth: '850px',
+  maxHeight: '90vh',
+  background: '#e8dfd0',
+  padding: '30px',
+  textAlign: 'center',
+  boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+  boxSizing: 'border-box',
+  border: '1px solid #b9ad9a',
+  animation: 'museumOpen 0.25s ease-out',
   },
 
   closeButton: {
@@ -1258,6 +1097,7 @@ sizeValue: {
     color: '#302b24',
     fontSize: '16px',
     cursor: 'pointer',
+    zIndex: 2,
   },
 
   modalFrame: {
@@ -1270,9 +1110,10 @@ sizeValue: {
 
   modalImage: {
     display: 'block',
+    width: '100%',
     maxWidth: '750px',
     maxHeight: '65vh',
-    width: '100%',
+    margin: '0 auto',
     objectFit: 'contain',
     background: '#ffffff',
   },
