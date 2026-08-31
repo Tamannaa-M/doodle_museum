@@ -69,17 +69,29 @@ function App() {
   ]
 
   // -------------------------
-  // VINTAGE HAND-DRAWN DOODLE FRAME STYLES
+  // SALON GALLERY WALL CLUSTER CONFIGURATION (Reference Image 1)
   // -------------------------
-  const frameTypeList = [
-    'scallop-oval',   // Ruffled Pie-Crust Oval from User Notebook Sketch
-    'baroque-scroll', // Grand Ornate Scrollwork Rectangle
-    'leafy-wreath',   // Botanical Leaf Wreath Oval
-    'striped-bevel',  // Engraved Striped / Hatching Bevel Rectangle
-    'wavy-ribbon',    // Wavy Ribbon Contour Frame
-    'sunray-cameo',   // Sunburst Radial Cameo Oval
-    'classic-mitred', // Crisp Mitred Double Line Frame
-    'tall-flourish',  // Tall Portrait Baroque Flourish Frame
+  const SALON_FRAME_CONFIG = [
+    // 0: Grand Baroque Centerpiece (Large 2x2 Feature)
+    { type: 'grand-baroque', spanClass: 'salon-span-feature' },
+    // 1: Wide Landscape Horizontal (2x1 Span)
+    { type: 'wide-landscape', spanClass: 'salon-span-wide' },
+    // 2: Ornate Corner Square
+    { type: 'ornate-square', spanClass: 'salon-span-square' },
+    // 3: Scalloped Pie-Crust Oval (1x2 Tall)
+    { type: 'scallop-oval', spanClass: 'salon-span-tall' },
+    // 4: Botanical Leaf Wreath Oval (1x2 Tall)
+    { type: 'leafy-wreath', spanClass: 'salon-span-tall' },
+    // 5: Engraved Striped Bevel (1x1 Compact)
+    { type: 'striped-bevel', spanClass: 'salon-span-compact' },
+    // 6: Tall Narrow Portrait (1x2 Tall)
+    { type: 'tall-portrait', spanClass: 'salon-span-tall-narrow' },
+    // 7: Wavy Ribbon Contour (1x1 Square)
+    { type: 'wavy-ribbon', spanClass: 'salon-span-compact' },
+    // 8: Sunburst Cameo Oval (1x2 Tall)
+    { type: 'sunray-cameo', spanClass: 'salon-span-tall' },
+    // 9: Mini Cameo Accent (1x1 Mini)
+    { type: 'mini-cameo', spanClass: 'salon-span-compact' },
   ]
 
   // -------------------------
@@ -616,47 +628,35 @@ function App() {
               <div className="salon-gallery-wall">
                 {doodles.map((rawDoodle, index) => {
                   const doodle = parseDoodleMetadata(rawDoodle, index)
-                  const frameType = frameTypeList[index % frameTypeList.length]
+                  const frameConfig = SALON_FRAME_CONFIG[index % SALON_FRAME_CONFIG.length]
 
                   return (
                     <article
                       key={doodle.id || index}
-                      className="artwork-card"
+                      className={`artwork-card ${frameConfig.spanClass}`}
                       onClick={() => setSelectedDoodle(doodle)}
                       title={`Inspect "${doodle.cleanTitle}" by ${doodle.artistName}`}
                     >
-                      {/* Brass Nail & Hanging Cord */}
-                      <div className="hanging-mechanism">
-                        <div className="brass-nail"></div>
-                        <div className="hanging-cord"></div>
-                      </div>
-
                       {/* Top-Right Artist Avatar Seal */}
                       <div className="artwork-artist-seal" title={`Artist: ${doodle.artistName}`}>
-                        <RenderAvatar avatar={doodle.avatar} size={34} />
+                        <RenderAvatar avatar={doodle.avatar} size={28} />
                       </div>
 
-                      {/* Hand-Drawn Black & White SVG Frame */}
+                      {/* Hand-Drawn Black & White SVG Frame (Matching Reference Image 1) */}
                       <DoodleFrame
-                        frameType={frameType}
+                        frameType={frameConfig.type}
                         imageUrl={doodle.image_url}
                         title={doodle.cleanTitle}
                       />
 
-                      {/* Hand-Drawn Museum Wall Plaque */}
+                      {/* Snug Hand-Drawn Museum Wall Plaque */}
                       <div className="museum-wall-plaque">
                         <div className="plaque-title">
                           {doodle.cleanTitle}
                         </div>
                         <div className="plaque-artist-row">
-                          <RenderAvatar avatar={doodle.avatar} size={18} />
+                          <RenderAvatar avatar={doodle.avatar} size={15} />
                           <span className="plaque-artist-name">by {doodle.artistName}</span>
-                        </div>
-                        <div className="plaque-metadata">
-                          DOODLE •{' '}
-                          {doodle.created_at
-                            ? new Date(doodle.created_at).getFullYear()
-                            : '2026'}
                         </div>
                       </div>
                     </article>

@@ -651,65 +651,106 @@ html, body {
   color: #181512;
 }
 
-/* Salon Gallery Wall (Multi-column Masonry) */
+/* ==========================================================================
+   SALON GALLERY WALL MOSAIC CLUSTER (Matching Reference Image 1)
+   ========================================================================== */
+
 .salon-gallery-wall {
-  column-count: 3;
-  column-gap: 40px;
-  padding: 10px 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 200px;
+  grid-auto-flow: dense;
+  gap: 16px 20px;
+  align-items: center;
+  justify-items: center;
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 16px 0;
 }
 
 @media (max-width: 1100px) {
   .salon-gallery-wall {
-    column-count: 2;
-    column-gap: 30px;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 180px;
+    gap: 14px 16px;
   }
 }
 
-@media (max-width: 650px) {
+@media (max-width: 768px) {
   .salon-gallery-wall {
-    column-count: 1;
-    column-gap: 0;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 145px;
+    gap: 10px 12px;
   }
+}
+
+/* Interlocking Salon Span Roles (Matching Reference Image 1) */
+
+/* 1. Grand Baroque Centerpiece: spans 2 columns x 2 rows */
+.artwork-card.salon-span-feature {
+  grid-column: span 2;
+  grid-row: span 2;
+  width: 100%;
+  max-width: 380px;
+}
+
+/* 2. Wide Landscape Horizontal: spans 2 columns x 1 row */
+.artwork-card.salon-span-wide {
+  grid-column: span 2;
+  grid-row: span 1;
+  width: 100%;
+  max-width: 440px;
+}
+
+/* 3. Tall Ovals & Portrait Frames: spans 1 column x 2 rows */
+.artwork-card.salon-span-tall {
+  grid-column: span 1;
+  grid-row: span 2;
+  width: 100%;
+  max-width: 250px;
+}
+
+/* 4. Tall Narrow Portrait: spans 1 column x 2 rows */
+.artwork-card.salon-span-tall-narrow {
+  grid-column: span 1;
+  grid-row: span 2;
+  width: 100%;
+  max-width: 210px;
+}
+
+/* 5. Ornate Square: spans 1 column x 1 row */
+.artwork-card.salon-span-square {
+  grid-column: span 1;
+  grid-row: span 1;
+  width: 100%;
+  max-width: 230px;
+}
+
+/* 6. Compact / Mini Cameo / Ribbon: spans 1 column x 1 row */
+.artwork-card.salon-span-compact {
+  grid-column: span 1;
+  grid-row: span 1;
+  width: 100%;
+  max-width: 220px;
 }
 
 /* Artwork Card */
 .artwork-card {
-  break-inside: avoid;
-  margin-bottom: 48px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   position: relative;
   cursor: pointer;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  padding: 4px;
+  box-sizing: border-box;
 }
 
 .artwork-card:hover {
-  transform: translateY(-8px) scale(1.02);
-}
-
-/* Hanging Mechanism */
-.hanging-mechanism {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: -3px;
-  z-index: 2;
-}
-
-.brass-nail {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #181512;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-  border: 1px solid #785a26;
-}
-
-.hanging-cord {
-  width: 2px;
-  height: 14px;
-  background: #181512;
+  transform: translateY(-4px) scale(1.03);
+  z-index: 10;
 }
 
 /* --- DOODLE FRAME COMPONENT STYLES --- */
@@ -731,33 +772,36 @@ html, body {
 }
 
 .artwork-card:hover .doodle-svg-frame {
-  transform: scale(1.03);
+  transform: scale(1.02);
 }
 
-/* --- MUSEUM WALL PLAQUE (Hand-Drawn Sketchbook Style) --- */
+/* --- SNUG MUSEUM WALL PLAQUE --- */
 .museum-wall-plaque {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 14px;
-  padding: 8px 18px;
+  margin-top: -6px;
+  padding: 3px 12px;
   background: #ffffff;
-  border: 2px solid #181512;
+  border: 1.5px solid #181512;
   border-radius: 4px;
-  box-shadow: 3px 3px 0px #181512;
-  max-width: 220px;
+  box-shadow: 2px 2px 0px #181512;
+  max-width: 85%;
   text-align: center;
   position: relative;
+  z-index: 4;
 }
 
 .plaque-title {
   font-family: var(--font-serif);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   color: #181512;
-  line-height: 1.2;
-  margin-bottom: 2px;
-  word-break: break-word;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
 }
 
 .plaque-metadata {
