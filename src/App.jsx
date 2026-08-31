@@ -16,36 +16,47 @@ function App() {
   const [brushSize, setBrushSize] = useState(5)
 
   // -------------------------
-  // PRESET COLOURS
+  // PRESET COLOUR PALETTE
   // -------------------------
-
   const presetColors = [
-    '#000000', // Ink black
-    '#D98C9B', // Dusty pink
+    '#000000', // Ink Black
+    '#D98C9B', // Dusty Rose
     '#A88BC7', // Lavender
-    '#82B8D8', // Soft blue
-    '#91A88C', // Sage
-    '#E7A77B', // Peach
+    '#82B8D8', // Soft Sky Blue
+    '#91A88C', // Sage Green
+    '#E7A77B', // Warm Peach
+    '#8D5B4C', // Terracotta
+    '#CBA358', // Antique Gold
+  ]
+
+  // -------------------------
+  // VINTAGE FRAME STYLES
+  // -------------------------
+  const frameClassList = [
+    'frame-royal-arch',       // Cathedral Arch with Gold Leaf
+    'frame-cameo-oval',       // Victorian Cameo Oval with Bronze Trim
+    'frame-baroque-gilt',     // Grand Gilded Baroque Rectangle
+    'frame-dark-mahogany',    // Curator's Dark Mahogany with Linen Mat
+    'frame-florentine-wide',  // Florentine Wide Landscape Gilded Frame
+    'frame-petite-antique',   // Petite Square Antique Gold Frame
   ]
 
   // -------------------------
   // LOAD GALLERY
   // -------------------------
-
   useEffect(() => {
     fetchDoodles()
   }, [])
 
   async function fetchDoodles() {
     setLoadingGallery(true)
-
     const { data, error } = await supabase
       .from('doodles')
       .select('*')
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Gallery error:', error)
+      console.error('Gallery fetch error:', error)
       setLoadingGallery(false)
       return
     }
@@ -57,9 +68,9 @@ function App() {
   // -------------------------
   // CANVAS COORDINATES
   // -------------------------
-
   function getCanvasCoordinates(e) {
     const canvas = canvasRef.current
+    if (!canvas) return { x: 0, y: 0 }
     const rect = canvas.getBoundingClientRect()
 
     const scaleX = canvas.width / rect.width
@@ -74,25 +85,22 @@ function App() {
   // -------------------------
   // UNDO HISTORY
   // -------------------------
-
   function saveCanvasState() {
     const canvas = canvasRef.current
-
     if (!canvas) return
 
     historyRef.current.push(canvas.toDataURL())
-
     if (historyRef.current.length > 30) {
       historyRef.current.shift()
     }
   }
 
   // -------------------------
-  // DRAWING
+  // DRAWING LOGIC (Pointer + Touch)
   // -------------------------
-
   function startDrawing(e) {
     const canvas = canvasRef.current
+    if (!canvas) return
     const ctx = canvas.getContext('2d')
     const { x, y } = getCanvasCoordinates(e)
 
@@ -100,18 +108,21 @@ function App() {
 
     ctx.beginPath()
     ctx.moveTo(x, y)
-
     setIsDrawing(true)
 
-    if (canvas.setPointerCapture) {
-      canvas.setPointerCapture(e.pointerId)
+    if (canvas.setPointerCapture && e.pointerId !== undefined) {
+      try {
+        canvas.setPointerCapture(e.pointerId)
+      } catch (err) {
+        // pointer capture fallback
+      }
     }
   }
 
   function draw(e) {
     if (!isDrawing) return
-
     const canvas = canvasRef.current
+    if (!canvas) return
     const ctx = canvas.getContext('2d')
     const { x, y } = getCanvasCoordinates(e)
 
@@ -132,54 +143,54 @@ function App() {
 
   function stopDrawing(e) {
     if (!isDrawing) return
-
     const canvas = canvasRef.current
+    if (!canvas) return
     const ctx = canvas.getContext('2d')
 
     ctx.closePath()
     ctx.globalCompositeOperation = 'source-over'
-
     setIsDrawing(false)
 
     if (
       canvas.releasePointerCapture &&
+      e?.pointerId !== undefined &&
       canvas.hasPointerCapture?.(e.pointerId)
     ) {
-      canvas.releasePointerCapture(e.pointerId)
+      try {
+        canvas.releasePointerCapture(e.pointerId)
+      } catch (err) {
+        // ignore
+      }
     }
   }
 
   // -------------------------
   // UNDO
   // -------------------------
-
   function undo() {
     const canvas = canvasRef.current
+    if (!canvas) return
     const ctx = canvas.getContext('2d')
 
     if (historyRef.current.length === 0) return
 
     const previousState = historyRef.current.pop()
-
     const image = new Image()
-
     image.onload = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.globalCompositeOperation = 'source-over'
       ctx.drawImage(image, 0, 0)
     }
-
     image.src = previousState
   }
 
   // -------------------------
   // CLEAR
   // -------------------------
-
   function clearCanvas() {
     saveCanvasState()
-
     const canvas = canvasRef.current
+    if (!canvas) return
     const ctx = canvas.getContext('2d')
 
     ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -187,34 +198,23 @@ function App() {
   }
 
   // -------------------------
-  // SELECT COLOUR
+  // SELECT COLOR
   // -------------------------
-
   function selectColor(newColor) {
     setColor(newColor)
     setTool('pen')
   }
 
   // -------------------------
-  // SAVE DOODLE
+  // SAVE DOODLE (Crop Bounding Box & Upload)
   // -------------------------
-
   async function saveDoodle() {
     const canvas = canvasRef.current
-
     if (!canvas) return
 
     setSaving(true)
-
     const ctx = canvas.getContext('2d')
-
-    const imageData = ctx.getImageData(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    )
-
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
     const pixels = imageData.data
 
     let minX = canvas.width
@@ -227,10 +227,8 @@ function App() {
       for (let x = 0; x < canvas.width; x++) {
         const index = (y * canvas.width + x) * 4
         const alpha = pixels[index + 3]
-
         if (alpha > 0) {
           foundDrawing = true
-
           if (x < minX) minX = x
           if (x > maxX) maxX = x
           if (y < minY) minY = y
@@ -240,13 +238,12 @@ function App() {
     }
 
     if (!foundDrawing) {
-      alert('Draw something first! 🎨')
+      alert('Draw something on the canvas first! 🎨')
       setSaving(false)
       return
     }
 
-    const padding = 40
-
+    const padding = 36
     minX = Math.max(0, minX - padding)
     minY = Math.max(0, minY - padding)
     maxX = Math.min(canvas.width, maxX + padding)
@@ -256,21 +253,12 @@ function App() {
     const croppedHeight = maxY - minY
 
     const croppedCanvas = document.createElement('canvas')
-
     croppedCanvas.width = croppedWidth
     croppedCanvas.height = croppedHeight
 
     const croppedCtx = croppedCanvas.getContext('2d')
-
     croppedCtx.fillStyle = '#ffffff'
-
-    croppedCtx.fillRect(
-      0,
-      0,
-      croppedWidth,
-      croppedHeight
-    )
-
+    croppedCtx.fillRect(0, 0, croppedWidth, croppedHeight)
     croppedCtx.drawImage(
       canvas,
       minX,
@@ -285,13 +273,12 @@ function App() {
 
     croppedCanvas.toBlob(async (blob) => {
       if (!blob) {
-        alert('Could not create image')
+        alert('Could not process image')
         setSaving(false)
         return
       }
 
       const fileName = `${Date.now()}.png`
-
       const { error: uploadError } = await supabase.storage
         .from('doodles')
         .upload(fileName, blob, {
@@ -300,7 +287,7 @@ function App() {
 
       if (uploadError) {
         console.error(uploadError)
-        alert('Image upload failed')
+        alert('Image upload failed. Please try again.')
         setSaving(false)
         return
       }
@@ -312,982 +299,336 @@ function App() {
       const { error: databaseError } = await supabase
         .from('doodles')
         .insert({
-          title: title || 'Untitled Doodle',
+          title: title.trim() || 'Untitled Doodle',
           image_url: data.publicUrl,
         })
 
       if (databaseError) {
         console.error(databaseError)
-        alert('Doodle information could not be saved')
+        alert('Doodle record could not be saved.')
         setSaving(false)
         return
       }
 
       setTitle('')
       setSaving(false)
-
+      clearCanvas()
       await fetchDoodles()
-
-      alert('Doodle added to the museum! 🖼️✨')
     }, 'image/png')
   }
 
-  // -------------------------
-  // FRAME VARIATIONS
-  // -------------------------
-
-  const frameStyles = [
-    styles.frameGold,
-    styles.frameDark,
-    styles.frameClassic,
-    styles.frameGold,
-    styles.frameDark,
-  ]
-
-  // -------------------------
-  // UI
-  // -------------------------
-
   return (
-    <div style={styles.app}>
+    <div className="museum-wall-bg">
+      <div className="museum-app-container">
 
-      {/* MOBILE/TABLET TOOLBAR */}
-
-      <aside style={styles.toolbar}>
-
-        <div style={styles.toolbarLogo}>
-          🎨
-        </div>
-
-        <div style={styles.toolLabel}>
-          ARTIST
-        </div>
-
-        {/* PEN */}
-
-        <button
-          style={
-            tool === 'pen'
-              ? styles.activeButton
-              : styles.toolButton
-          }
-          onClick={() => setTool('pen')}
-          title="Pen"
-        >
-          ✏️
-        </button>
-
-        {/* ERASER */}
-
-        <button
-          style={
-            tool === 'eraser'
-              ? styles.activeButton
-              : styles.toolButton
-          }
-          onClick={() => setTool('eraser')}
-          title="Eraser"
-        >
-          🧹
-        </button>
-
-        {/* UNDO */}
-
-        <button
-          style={styles.toolButton}
-          onClick={undo}
-          title="Undo"
-        >
-          ↩️
-        </button>
-
-        {/* CLEAR */}
-
-        <button
-          style={styles.toolButton}
-          onClick={clearCanvas}
-          title="Clear"
-        >
-          🗑️
-        </button>
-
-        <div style={styles.separator}></div>
-
-        {/* PRESET COLOURS */}
-
-        <div style={styles.colorSection}>
-
-          <div style={styles.colorSectionTitle}>
-            COLORS
+        {/* ======================================================
+            STUDIO TOOLBAR (Responsive: Vertical Desktop / Horizontal Mobile)
+            ====================================================== */}
+        <aside className="desktop-toolbar" aria-label="Artist Tools">
+          <div className="toolbar-crest" title="The Doodle Museum Studio">
+            🎨
           </div>
 
-          <div style={styles.colorPalette}>
+          <div className="toolbar-section-label">Tools</div>
 
+          {/* PEN */}
+          <button
+            className={`tool-btn ${tool === 'pen' ? 'active' : ''}`}
+            onClick={() => setTool('pen')}
+            title="Drawing Pen"
+            aria-label="Pen"
+          >
+            <span>✏️</span>
+            <span className="tool-btn-caption">PEN</span>
+          </button>
+
+          {/* ERASER */}
+          <button
+            className={`tool-btn ${tool === 'eraser' ? 'active' : ''}`}
+            onClick={() => setTool('eraser')}
+            title="Eraser"
+            aria-label="Eraser"
+          >
+            <span>🧹</span>
+            <span className="tool-btn-caption">ERASE</span>
+          </button>
+
+          {/* UNDO */}
+          <button
+            className="tool-btn"
+            onClick={undo}
+            title="Undo last stroke"
+            aria-label="Undo"
+          >
+            <span>↩️</span>
+            <span className="tool-btn-caption">UNDO</span>
+          </button>
+
+          {/* CLEAR */}
+          <button
+            className="tool-btn"
+            onClick={clearCanvas}
+            title="Clear canvas"
+            aria-label="Clear"
+          >
+            <span>🗑️</span>
+            <span className="tool-btn-caption">CLEAR</span>
+          </button>
+
+          <div className="toolbar-divider"></div>
+
+          {/* PALETTE */}
+          <div className="toolbar-section-label">Colors</div>
+
+          <div className="palette-grid">
             {presetColors.map((presetColor) => (
               <button
                 key={presetColor}
                 onClick={() => selectColor(presetColor)}
                 title={presetColor}
-                style={{
-                  ...styles.colorButton,
-                  background: presetColor,
-                  ...(color === presetColor && tool === 'pen'
-                    ? styles.selectedColor
-                    : {}),
-                }}
+                className={`color-swatch ${
+                  color === presetColor && tool === 'pen' ? 'selected' : ''
+                }`}
+                style={{ backgroundColor: presetColor }}
+                aria-label={`Color ${presetColor}`}
               />
             ))}
-
           </div>
 
-          {/* CUSTOM COLOUR WHEEL */}
-
-          <label
-            style={styles.customColorButton}
-            title="Custom colour"
-          >
-            🎨
-
+          {/* CUSTOM COLOR WHEEL */}
+          <label className="custom-picker-wrapper" title="Choose custom color">
+            <span>🎨</span>
             <input
               type="color"
               value={color}
               onChange={(e) => selectColor(e.target.value)}
-              style={styles.colorPicker}
+              className="hidden-color-input"
             />
           </label>
 
-        </div>
+          <div className="toolbar-divider"></div>
 
-        <div style={styles.separator}></div>
-
-        {/* BRUSH SIZE */}
-
-        <div style={styles.sizeControl}>
-
-  <div style={styles.sizeTitle}>
-    BRUSH
-  </div>
-
-  <div style={styles.sizeRow}>
-
-    <span style={styles.sizeIcon}>•</span>
-
-    <input
-      type="range"
-      min="1"
-      max="40"
-      step="1"
-      value={brushSize}
-      onChange={(e) => setBrushSize(Number(e.target.value))}
-      style={styles.slider}
-    />
-
-    <span style={styles.sizeIcon}>●</span>
-
-  </div>
-
-  <div style={styles.sizeValue}>
-    {brushSize}px
-  </div>
-
-</div>
-
-      </aside>
-
-
-      {/* MAIN MUSEUM */}
-
-      <main style={styles.workspace}>
-
-        {/* HEADER */}
-
-        <header style={styles.header}>
-
-          <div>
-
-            <div style={styles.museumSmallTitle}>
-              EST. 2026 • DIGITAL ART
-            </div>
-
-            <h1 style={styles.heading}>
-              The Doodle Museum
-            </h1>
-
-            <p style={styles.subtitle}>
-              A collection of little things worth remembering.
-            </p>
-
-          </div>
-
-          <div style={styles.saveArea}>
-
+          {/* BRUSH SIZE */}
+          <div className="brush-size-box">
+            <div className="toolbar-section-label">Brush</div>
             <input
-              style={styles.titleInput}
-              type="text"
-              placeholder="Name your artwork..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              type="range"
+              min="1"
+              max="40"
+              step="1"
+              value={brushSize}
+              onChange={(e) => setBrushSize(Number(e.target.value))}
+              className="brush-slider"
+              title={`Brush Size: ${brushSize}px`}
             />
-
-            <button
-              style={styles.saveButton}
-              onClick={saveDoodle}
-              disabled={saving}
-            >
-              {saving
-                ? '⏳ Saving...'
-                : '💾 Add to Museum'}
-            </button>
-
+            <div className="brush-indicator">{brushSize}px</div>
           </div>
+        </aside>
 
-        </header>
+        {/* ======================================================
+            MAIN MUSEUM WORKSPACE
+            ====================================================== */}
+        <main className="museum-workspace">
 
-
-        {/* ARTIST STUDIO */}
-
-        <section style={styles.studioSection}>
-
-          <div style={styles.sectionLabel}>
-            <span>✦</span>
-            ARTIST'S STUDIO
-            <span>✦</span>
-          </div>
-
-          {/* CANVAS */}
-
-          <div style={styles.canvasOuterFrame}>
-
-            <div style={styles.canvasInnerFrame}>
-
-              <canvas
-                ref={canvasRef}
-                width={1000}
-                height={650}
-                style={styles.canvas}
-                onPointerDown={startDrawing}
-                onPointerMove={draw}
-                onPointerUp={stopDrawing}
-                onPointerCancel={stopDrawing}
-              />
-
+          {/* --- MUSEUM HEADER --- */}
+          <header className="museum-header">
+            <div className="header-brand">
+              <div className="museum-badge">
+                <span>✦</span> EST. 2026 • DIGITAL ART <span>✦</span>
+              </div>
+              <h1 className="museum-title">
+                The Doodle Museum
+              </h1>
+              <p className="museum-subtitle">
+                A collection of little things worth remembering.
+              </p>
             </div>
 
-          </div>
+            {/* SAVE WORKSPACE CONTROLS */}
+            <div className="save-artwork-panel">
+              <input
+                className="artwork-title-input"
+                type="text"
+                placeholder="Name your artwork..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={45}
+              />
+              <button
+                className="add-museum-btn"
+                onClick={saveDoodle}
+                disabled={saving}
+              >
+                {saving ? '⏳ Archiving...' : '💾 Add to Museum'}
+              </button>
+            </div>
+          </header>
 
-          <div style={styles.studioPlaque}>
-            <span>WORK IN PROGRESS</span>
-          </div>
+          {/* --- ARTIST STUDIO / EASEL --- */}
+          <section className="studio-section" aria-label="Artist Studio">
+            <div className="studio-ribbon">
+              <span>✦</span> ARTIST'S STUDIO <span>✦</span>
+            </div>
 
-        </section>
+            {/* GRAND WOODEN EASEL WITH GOLD FILLET */}
+            <div className="canvas-grand-easel">
+              <div className="canvas-gold-fillet">
+                <canvas
+                  ref={canvasRef}
+                  width={1000}
+                  height={650}
+                  className="studio-canvas"
+                  onPointerDown={startDrawing}
+                  onPointerMove={draw}
+                  onPointerUp={stopDrawing}
+                  onPointerCancel={stopDrawing}
+                  onPointerLeave={stopDrawing}
+                />
+              </div>
+            </div>
 
+            <div className="easel-status-plaque">
+              <span>✦ WORK IN PROGRESS ✦</span>
+            </div>
+          </section>
 
-        {/* EXHIBITION */}
+          {/* --- SALON EXHIBITION WALL --- */}
+          <section className="exhibition-section" aria-label="Museum Exhibition">
+            <div className="exhibition-title-banner">
+              <div className="exhibition-rule-line"></div>
+              <div className="exhibition-header-text">
+                <div className="exhibition-subtitle-tag">
+                  PERMANENT COLLECTION
+                </div>
+                <h2 className="exhibition-main-title">
+                  The Exhibition Wall
+                </h2>
+              </div>
+              <div className="exhibition-rule-line"></div>
+            </div>
 
-        <section style={styles.gallerySection}>
+            {loadingGallery ? (
+              <div className="gallery-empty-state">
+                <div className="empty-icon">🖼️</div>
+                <p className="empty-text">Curating the gallery exhibition...</p>
+              </div>
+            ) : doodles.length === 0 ? (
+              <div className="gallery-empty-state">
+                <div className="empty-icon">🎨</div>
+                <p className="empty-text">
+                  The gallery wall is ready for its very first masterpiece.
+                </p>
+              </div>
+            ) : (
+              <div className="salon-gallery-wall">
+                {doodles.map((doodle, index) => {
+                  const frameClass =
+                    frameClassList[index % frameClassList.length]
 
-          <div style={styles.exhibitionHeading}>
+                  return (
+                    <article
+                      key={doodle.id || index}
+                      className="artwork-card"
+                      onClick={() => setSelectedDoodle(doodle)}
+                      title={`Inspect "${doodle.title || 'Untitled'}"`}
+                    >
+                      {/* Brass Hook & Hanging Cord */}
+                      <div className="hanging-mechanism">
+                        <div className="brass-nail"></div>
+                        <div className="hanging-cord"></div>
+                      </div>
 
-            <div style={styles.exhibitionLine}></div>
+                      {/* Vintage Frame with Mat & Image Mask */}
+                      <div className={`museum-frame-base ${frameClass}`}>
+                        <div className="frame-mat">
+                          <div className="frame-artwork-mask">
+                            <img
+                              src={doodle.image_url}
+                              alt={doodle.title || 'Museum Doodle'}
+                              className="gallery-doodle-img"
+                              loading="lazy"
+                            />
+                          </div>
+                        </div>
+                      </div>
 
-            <div>
+                      {/* Museum Brass Wall Plaque */}
+                      <div className="museum-wall-plaque">
+                        <div className="plaque-title">
+                          {doodle.title || 'Untitled Doodle'}
+                        </div>
+                        <div className="plaque-metadata">
+                          DOODLE •{' '}
+                          {doodle.created_at
+                            ? new Date(doodle.created_at).getFullYear()
+                            : '2026'}
+                        </div>
+                      </div>
+                    </article>
+                  )
+                })}
+              </div>
+            )}
+          </section>
 
-              <div style={styles.exhibitionSmall}>
-                PERMANENT COLLECTION
+          {/* FOOTER */}
+          <footer className="museum-footer">
+            ✦ Every doodle deserves a place on the wall. ✦
+          </footer>
+        </main>
+
+        {/* ======================================================
+            MODAL SPOTLIGHT VIEWER (Zoom in on Click)
+            ====================================================== */}
+        {selectedDoodle && (
+          <div
+            className="modal-backdrop"
+            onClick={() => setSelectedDoodle(null)}
+          >
+            <div
+              className="modal-spotlight-box"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="modal-close-btn"
+                onClick={() => setSelectedDoodle(null)}
+                aria-label="Close artwork viewer"
+              >
+                ✕
+              </button>
+
+              <div className="modal-frame-wrapper">
+                <img
+                  src={selectedDoodle.image_url}
+                  alt={selectedDoodle.title || 'Artwork'}
+                  className="modal-artwork-img"
+                />
               </div>
 
-              <h2 style={styles.galleryTitle}>
-                The Exhibition
+              <h2 className="modal-artwork-title">
+                {selectedDoodle.title || 'Untitled Doodle'}
               </h2>
 
-            </div>
-
-            <div style={styles.exhibitionLine}></div>
-
-          </div>
-
-
-          {loadingGallery ? (
-
-            <div style={styles.emptyMessage}>
-
-              <div style={styles.loadingIcon}>
-                🖼️
+              <div className="modal-artwork-sub">
+                DIGITAL INK ON CANVAS •{' '}
+                {selectedDoodle.created_at
+                  ? new Date(selectedDoodle.created_at).toLocaleDateString(
+                      undefined,
+                      {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      }
+                    )
+                  : 'EST. 2026'}{' '}
+                • THE DOODLE MUSEUM
               </div>
-
-              <p>
-                Preparing the exhibition...
-              </p>
-
             </div>
-
-          ) : doodles.length === 0 ? (
-
-            <div style={styles.emptyMessage}>
-
-              <div style={styles.loadingIcon}>
-                🎨
-              </div>
-
-              <p>
-                Your museum is waiting for its first masterpiece.
-              </p>
-
-            </div>
-
-          ) : (
-
-            <div style={styles.galleryGrid}>
-
-              {doodles.map((doodle, index) => (
-
-                <div
-                  key={doodle.id}
-                  style={styles.artwork}
-                  onClick={() => setSelectedDoodle(doodle)}
-                >
-
-                  <div
-                    style={{
-                      ...styles.frame,
-                      ...frameStyles[
-                        index % frameStyles.length
-                      ],
-                    }}
-                  >
-
-                    <div style={styles.frameInner}>
-
-                      <img
-                        src={doodle.image_url}
-                        alt={doodle.title}
-                        style={styles.doodleImage}
-                      />
-
-                    </div>
-
-                  </div>
-
-
-                  <div style={styles.plaque}>
-
-                    <div style={styles.plaqueTitle}>
-                      {doodle.title}
-                    </div>
-
-                    <div style={styles.plaqueDetails}>
-                      DOODLE • 2026
-                    </div>
-
-                  </div>
-
-                </div>
-
-              ))}
-
-            </div>
-
-          )}
-
-        </section>
-
-
-        <footer style={styles.footer}>
-          ✦ Every doodle deserves a wall. ✦
-        </footer>
-
-      </main>
-
-
-      {/* ARTWORK VIEWER */}
-
-      {selectedDoodle && (
-
-        <div
-          style={styles.modalOverlay}
-          onClick={() => setSelectedDoodle(null)}
-        >
-
-          <div
-            style={styles.modal}
-            onClick={(e) => e.stopPropagation()}
-          >
-
-            <button
-              style={styles.closeButton}
-              onClick={() => setSelectedDoodle(null)}
-            >
-              ✕
-            </button>
-
-            <div style={styles.modalFrame}>
-
-              <img
-                src={selectedDoodle.image_url}
-                alt={selectedDoodle.title}
-                style={styles.modalImage}
-              />
-
-            </div>
-
-            <h2 style={styles.modalTitle}>
-              {selectedDoodle.title}
-            </h2>
-
-            <div style={styles.modalDetails}>
-              DOODLE • 2026 • THE DOODLE MUSEUM
-            </div>
-
           </div>
-
-        </div>
-
-      )}
-
+        )}
+      </div>
     </div>
   )
-}
-
-
-// ======================================================
-// STYLES
-// ======================================================
-
-const styles = {
-
-  app: {
-    minHeight: '100vh',
-    width: '100%',
-    display: 'flex',
-    background: '#e8dfd0',
-    fontFamily: 'Georgia, "Times New Roman", serif',
-    color: '#29251f',
-  },
-
-  // -------------------------
-  // TOOLBAR
-  // -------------------------
-
-  toolbar: {
-    width: '110px',
-    minWidth: '110px',
-    height: '100vh',
-    background: '#211f1b',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    padding: '20px 10px',
-    gap: '12px',
-    boxSizing: 'border-box',
-    boxShadow: '4px 0 15px rgba(0,0,0,0.18)',
-    position: 'sticky',
-    top: 0,
-    alignSelf: 'flex-start',
-    zIndex: 20,
-  },
-
-  toolbarLogo: {
-    width: '52px',
-    height: '52px',
-    borderRadius: '50%',
-    background: '#c9a45c',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '27px',
-    marginBottom: '2px',
-    boxShadow: '0 3px 10px rgba(0,0,0,0.3)',
-  },
-
-  toolLabel: {
-    fontSize: '9px',
-    letterSpacing: '2px',
-    color: '#c9bfae',
-    marginBottom: '5px',
-  },
-
-  toolButton: {
-    width: '54px',
-    height: '54px',
-    border: '1px solid #514c43',
-    borderRadius: '8px',
-    background: '#302d27',
-    color: '#fff',
-    fontSize: '21px',
-    cursor: 'pointer',
-  },
-
-  activeButton: {
-    width: '54px',
-    height: '54px',
-    border: '2px solid #d8b86b',
-    borderRadius: '8px',
-    background: '#4a4337',
-    color: '#fff',
-    fontSize: '21px',
-    cursor: 'pointer',
-  },
-
-  separator: {
-    width: '50px',
-    borderTop: '1px solid #514c43',
-    margin: '5px 0',
-  },
-
-  // -------------------------
-  // COLOURS
-  // -------------------------
-
-  colorSection: {
-    width: '70px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '8px',
-  },
-
-  colorSectionTitle: {
-    fontSize: '8px',
-    letterSpacing: '1.5px',
-    color: '#c9bfae',
-  },
-
-  colorPalette: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, 22px)',
-    gap: '7px',
-    justifyContent: 'center',
-  },
-
-  colorButton: {
-    width: '22px',
-    height: '22px',
-    borderRadius: '50%',
-    border: '2px solid #211f1b',
-    outline: '1px solid #514c43',
-    cursor: 'pointer',
-    padding: 0,
-  },
-
-  selectedColor: {
-    outline: '2px solid #f2dfad',
-    transform: 'scale(1.15)',
-  },
-
-  customColorButton: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '50%',
-    border: '1px solid #514c43',
-    background: '#302d27',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '17px',
-    cursor: 'pointer',
-    position: 'relative',
-  },
-
-  colorPicker: {
-    position: 'absolute',
-    inset: 0,
-    width: '100%',
-    height: '100%',
-    opacity: 0,
-    cursor: 'pointer',
-  },
-
-  sizeControl: {
-  width: '90px',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: '6px',
-  marginTop: '10px',
-  paddingBottom: '20px',
-},
-
-sizeTitle: {
-  fontSize: '9px',
-  letterSpacing: '2px',
-  color: '#c9bfae',
-},
-
-sizeRow: {
-  width: '90px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '4px',
-},
-
-sizeIcon: {
-  color: '#e8dfd0',
-  fontSize: '10px',
-},
-
-slider: {
-  width: '65px',
-  height: '20px',
-  cursor: 'pointer',
-  accentColor: '#c9a45c',
-},
-
-sizeValue: {
-  fontSize: '9px',
-  color: '#c9bfae',
-},
-
-  // -------------------------
-  // MAIN
-  // -------------------------
-
-  workspace: {
-      flex: 1,
-      minWidth: 0,
-      padding: '34px 45px 60px',
-      boxSizing: 'border-box',
-      overflow: 'auto',
-  },
-
-  header: {
-  maxWidth: '1200px',
-    margin: '0 auto 35px',
-    display: 'flex',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: '30px',
-    borderBottom: '1px solid #b9ad9a',
-    paddingBottom: '25px',
-  },
-
-  museumSmallTitle: {
-    fontSize: '10px',
-    letterSpacing: '3px',
-    color: '#806d4d',
-    marginBottom: '8px',
-    fontWeight: 'bold',
-  },
-
-  heading: {
-    margin: 0,
-    fontSize: '38px',
-    fontWeight: '500',
-    letterSpacing: '-1px',
-  },
-
-  subtitle: {
-    margin: '7px 0 0',
-    color: '#756d61',
-    fontSize: '14px',
-    fontStyle: 'italic',
-  },
-
-  saveArea: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    flexShrink: 0,
-  },
-
-  titleInput: {
-    width: '220px',
-    padding: '12px 14px',
-    border: '1px solid #b8aa94',
-    borderRadius: '4px',
-    background: '#f8f3ea',
-    color: '#29251f',
-    fontFamily: 'Georgia, serif',
-    fontSize: '14px',
-    outline: 'none',
-    boxSizing: 'border-box',
-  },
-
-  saveButton: {
-    padding: '12px 17px',
-    border: 'none',
-    borderRadius: '4px',
-    background: '#302b24',
-    color: '#fff',
-    fontFamily: 'Georgia, serif',
-    fontSize: '13px',
-    cursor: 'pointer',
-  },
-
-  // -------------------------
-  // STUDIO
-  // -------------------------
-
-  studioSection: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    textAlign: 'center',
-  },
-
-  sectionLabel: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: '15px',
-    fontSize: '11px',
-    letterSpacing: '3px',
-    color: '#806d4d',
-    marginBottom: '18px',
-    fontWeight: 'bold',
-  },
-
-  canvasOuterFrame: {
-    width: '900px',
-    maxWidth: '100%',
-    margin: '0 auto',
-    padding: '18px',
-    background: '#8b693f',
-    border: '6px solid #60472d',
-    boxShadow:
-      'inset 0 0 0 3px #c49b5b, 0 10px 25px rgba(0,0,0,0.25)',
-    boxSizing: 'border-box',
-  },
-
-  canvasInnerFrame: {
-    padding: '12px',
-    background: '#d1ae70',
-    boxShadow: 'inset 0 0 0 2px #6d5032',
-    boxSizing: 'border-box',
-  },
-
-  canvas: {
-    display: 'block',
-    width: '100%',
-    height: 'auto',
-    aspectRatio: '1000 / 650',
-    background: '#ffffff',
-    cursor: 'crosshair',
-    touchAction: 'none',
-  },
-
-  studioPlaque: {
-    display: 'inline-block',
-    marginTop: '14px',
-    padding: '7px 24px',
-    background: '#302b24',
-    color: '#e8d8b7',
-    fontSize: '9px',
-    letterSpacing: '2px',
-  },
-
-  // -------------------------
-  // EXHIBITION
-  // -------------------------
-
-  gallerySection: {
-    maxWidth: '1200px',
-    margin: '75px auto 0',
-  },
-
-  exhibitionHeading: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '25px',
-    marginBottom: '45px',
-  },
-
-  exhibitionLine: {
-    flex: 1,
-    height: '1px',
-    background: '#b9ad9a',
-  },
-
-  exhibitionSmall: {
-    textAlign: 'center',
-    fontSize: '9px',
-    letterSpacing: '3px',
-    color: '#806d4d',
-    marginBottom: '5px',
-  },
-
-  galleryTitle: {
-    margin: 0,
-    textAlign: 'center',
-    fontSize: '32px',
-    fontWeight: '500',
-  },
-
-  galleryGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '75px 55px',
-    alignItems: 'start',
-  },
-
-  artwork: {
-    textAlign: 'center',
-    cursor: 'pointer',
-  },
-
-  frame: {
-    width: '100%',
-    aspectRatio: '4 / 5',
-    padding: '18px',
-    boxSizing: 'border-box',
-    boxShadow: '0 12px 24px rgba(0,0,0,0.25)',
-  },
-
-  frameInner: {
-    width: '100%',
-    height: '100%',
-    background: '#fff',
-    padding: '12px',
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  frameGold: {
-    background: '#b48b43',
-    border: '7px solid #775523',
-    boxShadow:
-      'inset 0 0 0 3px #d6b66e, inset 0 0 0 6px #80602e, 0 10px 20px rgba(0,0,0,0.22)',
-  },
-
-  frameDark: {
-    background: '#4a3423',
-    border: '8px solid #2d2118',
-    boxShadow:
-      'inset 0 0 0 3px #8a633e, 0 10px 20px rgba(0,0,0,0.25)',
-  },
-
-  frameClassic: {
-    background: '#d2c2a4',
-    border: '8px solid #806b4a',
-    boxShadow:
-      'inset 0 0 0 3px #eee1c6, inset 0 0 0 6px #9c8156, 0 10px 20px rgba(0,0,0,0.22)',
-  },
-
-  doodleImage: {
-    width: '100%',
-    height: '100%',
-    display: 'block',
-    objectFit: 'contain',
-    background: '#fff',
-  },
-
-  plaque: {
-    display: 'inline-block',
-    minWidth: '150px',
-    marginTop: '16px',
-    padding: '10px 22px',
-    background: '#eee5d5',
-    border: '1px solid #c8b99e',
-    boxShadow: '0 3px 8px rgba(0,0,0,0.12)',
-  },
-
-  plaqueTitle: {
-    fontSize: '16px',
-    fontWeight: 'bold',
-    color: '#332d25',
-    marginBottom: '4px',
-  },
-
-  plaqueDetails: {
-    fontSize: '8px',
-    letterSpacing: '2px',
-    color: '#817563',
-  },
-
-  emptyMessage: {
-    textAlign: 'center',
-    padding: '70px 20px',
-    color: '#756d61',
-    fontStyle: 'italic',
-  },
-
-  loadingIcon: {
-    fontSize: '42px',
-    marginBottom: '10px',
-  },
-
-  footer: {
-    textAlign: 'center',
-    marginTop: '80px',
-    paddingTop: '25px',
-    borderTop: '1px solid #b9ad9a',
-    color: '#897d6d',
-    fontSize: '12px',
-    fontStyle: 'italic',
-  },
-
-  // -------------------------
-  // MODAL
-  // -------------------------
-
-  modalOverlay: {
-    position: 'fixed',
-    inset: 0,
-    background: 'rgba(25, 22, 18, 0.82)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '30px',
-    boxSizing: 'border-box',
-    zIndex: 1000,
-  },
-
-  modal: {
-    position: 'relative',
-    maxWidth: '850px',
-    maxHeight: '90vh',
-    background: '#e8dfd0',
-    padding: '30px',
-    textAlign: 'center',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
-    boxSizing: 'border-box',
-  },
-
-  closeButton: {
-    position: 'absolute',
-    top: '12px',
-    right: '12px',
-    width: '34px',
-    height: '34px',
-    border: '1px solid #b9ad9a',
-    borderRadius: '50%',
-    background: '#f8f3ea',
-    color: '#302b24',
-    fontSize: '16px',
-    cursor: 'pointer',
-  },
-
-  modalFrame: {
-    padding: '18px',
-    background: '#8b693f',
-    border: '7px solid #60472d',
-    boxShadow:
-      'inset 0 0 0 3px #d6b66e, 0 10px 25px rgba(0,0,0,0.25)',
-  },
-
-  modalImage: {
-    display: 'block',
-    maxWidth: '750px',
-    maxHeight: '65vh',
-    width: '100%',
-    objectFit: 'contain',
-    background: '#ffffff',
-  },
-
-  modalTitle: {
-    margin: '20px 0 6px',
-    fontSize: '25px',
-    fontWeight: '500',
-  },
-
-  modalDetails: {
-    fontSize: '9px',
-    letterSpacing: '2px',
-    color: '#817563',
-  },
 }
 
 export default App
