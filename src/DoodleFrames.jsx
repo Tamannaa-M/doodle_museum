@@ -1,56 +1,60 @@
-import React from 'react'
+import React, { useId } from 'react'
 
 /**
  * Hand-drawn Black & White Vintage Doodle Frames
  * Accurately styled from the user's sketchbook drawings and reference frames.
+ * Uses SVG-native clipping and <image> scaling so drawings ALWAYS fit 100% perfectly.
  */
 export function DoodleFrame({ frameType, imageUrl, title }) {
+  const rawId = useId()
+  // Clean id for SVG clipPath
+  const clipId = `clip-${frameType}-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`
+
   switch (frameType) {
     // ----------------------------------------------------
     // 1. SCALLOP / RUFFLED OVAL FRAME (From User Notebook Sketch)
     // ----------------------------------------------------
     case 'scallop-oval':
       return (
-        <div className="doodle-frame-container frame-shape-oval" style={{ aspectRatio: '1 / 1.15' }}>
-          <svg className="frame-svg-overlay" viewBox="0 0 300 345" preserveAspectRatio="none">
+        <div className="doodle-frame-wrapper" style={{ aspectRatio: '300 / 350' }}>
+          <svg viewBox="0 0 300 350" className="doodle-svg-frame">
             <defs>
-              <clipPath id="clip-scallop-oval">
-                <ellipse cx="150" cy="172" rx="104" ry="126" />
+              <clipPath id={clipId}>
+                <ellipse cx="150" cy="175" rx="104" ry="128" />
               </clipPath>
             </defs>
-            {/* Outer Scalloped / Ruffled Petals Loop */}
-            <path
-              d="M 150 20
-                 C 168 18, 185 24, 200 35 C 215 45, 230 60, 240 78
-                 C 252 98, 260 120, 264 145 C 267 165, 265 188, 258 210
-                 C 250 232, 238 254, 222 272 C 205 290, 185 304, 162 312
-                 C 142 318, 120 316, 100 308 C 80 298, 62 284, 48 266
-                 C 34 246, 25 222, 22 198 C 18 175, 22 150, 30 128
-                 C 40 102, 56 80, 76 62 C 98 42, 124 24, 150 20 Z"
-              fill="none"
-              stroke="#161616"
-              strokeWidth="3.5"
-              strokeLinecap="round"
+
+            {/* White paper background inside frame */}
+            <ellipse cx="150" cy="175" rx="104" ry="128" fill="#ffffff" />
+
+            {/* Doodle Artwork perfectly centered and clipped */}
+            <image
+              href={imageUrl}
+              x="46"
+              y="47"
+              width="208"
+              height="256"
+              preserveAspectRatio="xMidYMid meet"
+              clipPath={`url(#${clipId})`}
             />
-            {/* Ruffle bumps along the perimeter */}
-            <path
-              d="M 150 16 q 12 -8 24 0 q 12 -6 24 2 q 12 -2 22 8 q 12 4 20 14 q 10 10 16 22
-                 q 8 14 10 26 q 4 16 2 28 q 0 16 -6 28 q -4 14 -12 26 q -8 14 -18 24
-                 q -10 12 -22 18 q -14 10 -28 12 q -16 4 -28 0 q -16 -4 -28 -12 q -14 -8 -24 -20
-                 q -10 -12 -16 -24 q -8 -16 -8 -30 q -2 -16 4 -28 q 4 -14 12 -26 q 8 -14 18 -22
-                 q 12 -12 24 -18 q 14 -8 28 -8 Z"
-              fill="none"
-              stroke="#161616"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            {/* Inner Oval Border Lines */}
-            <ellipse cx="150" cy="172" rx="112" ry="134" fill="none" stroke="#161616" strokeWidth="3" />
-            <ellipse cx="150" cy="172" rx="104" ry="126" fill="none" stroke="#161616" strokeWidth="1.8" />
+
+            {/* Hand-drawn Frame Overlay & Ruffled Scallop Border */}
+            <g fill="none" stroke="#161616" strokeLinecap="round" strokeLinejoin="round">
+              {/* Outer Ruffled Petals Loop */}
+              <path
+                d="M 150 18
+                   q 14 -10 26 0 q 14 -8 26 4 q 12 0 24 10 q 12 6 20 16 q 10 12 16 24
+                   q 8 14 10 26 q 4 16 2 28 q 0 16 -6 28 q -4 14 -12 26 q -8 14 -18 24
+                   q -10 12 -22 18 q -14 10 -28 12 q -16 4 -28 0 q -16 -4 -28 -12 q -14 -8 -24 -20
+                   q -10 -12 -16 -24 q -8 -16 -8 -30 q -2 -16 4 -28 q 4 -14 12 -26 q 8 -14 18 -22
+                   q 12 -12 24 -18 q 14 -8 28 -8 Z"
+                strokeWidth="2.8"
+              />
+              {/* Double Oval Molding */}
+              <ellipse cx="150" cy="175" rx="114" ry="138" strokeWidth="3.2" />
+              <ellipse cx="150" cy="175" rx="104" ry="128" strokeWidth="2.2" />
+            </g>
           </svg>
-          <div className="frame-artwork-clipper" style={{ clipPath: 'url(#clip-scallop-oval)' }}>
-            <img src={imageUrl} alt={title} className="frame-inner-img" loading="lazy" />
-          </div>
         </div>
       )
 
@@ -59,39 +63,54 @@ export function DoodleFrame({ frameType, imageUrl, title }) {
     // ----------------------------------------------------
     case 'leafy-wreath':
       return (
-        <div className="doodle-frame-container frame-shape-oval" style={{ aspectRatio: '1 / 1.25' }}>
-          <svg className="frame-svg-overlay" viewBox="0 0 280 350" preserveAspectRatio="none">
+        <div className="doodle-frame-wrapper" style={{ aspectRatio: '300 / 360' }}>
+          <svg viewBox="0 0 300 360" className="doodle-svg-frame">
             <defs>
-              <clipPath id="clip-leafy-wreath">
-                <ellipse cx="140" cy="175" rx="96" ry="130" />
+              <clipPath id={clipId}>
+                <ellipse cx="150" cy="180" rx="98" ry="132" />
               </clipPath>
             </defs>
-            {/* Base Oval Lines */}
-            <ellipse cx="140" cy="175" rx="106" ry="140" fill="none" stroke="#161616" strokeWidth="3" />
-            <ellipse cx="140" cy="175" rx="96" ry="130" fill="none" stroke="#161616" strokeWidth="1.8" />
-            {/* Botanical Leaves along border */}
-            <g stroke="#161616" strokeWidth="2.2" fill="none" strokeLinecap="round">
-              <path d="M 140 22 c 6 -12 18 -8 16 4 c -6 8 -16 2 -16 -4 Z" fill="#ffffff" />
-              <path d="M 175 32 c 12 -8 20 2 12 12 c -8 6 -16 -2 -12 -12 Z" fill="#ffffff" />
-              <path d="M 210 58 c 12 -4 16 8 8 16 c -10 6 -16 -4 -8 -16 Z" fill="#ffffff" />
-              <path d="M 238 98 c 10 2 12 14 2 18 c -10 2 -12 -10 -2 -18 Z" fill="#ffffff" />
-              <path d="M 248 145 c 8 6 6 18 -4 18 c -8 -2 -8 -12 4 -18 Z" fill="#ffffff" />
-              <path d="M 244 195 c 8 8 2 18 -8 16 c -8 -4 -6 -14 8 -16 Z" fill="#ffffff" />
-              <path d="M 226 242 c 6 10 -4 18 -12 12 c -6 -6 0 -14 12 -12 Z" fill="#ffffff" />
-              <path d="M 194 286 c 2 12 -10 16 -16 8 c -4 -8 4 -14 16 -8 Z" fill="#ffffff" />
-              <path d="M 152 316 c -2 12 -14 12 -16 2 c 0 -8 10 -10 16 -2 Z" fill="#ffffff" />
-              <path d="M 108 312 c -8 10 -18 6 -16 -4 c 4 -8 14 -4 16 4 Z" fill="#ffffff" />
-              <path d="M 68 280 c -12 8 -18 -2 -10 -12 c 6 -6 16 -2 10 12 Z" fill="#ffffff" />
-              <path d="M 40 234 c -12 2 -14 -10 -4 -16 c 8 -4 14 6 4 16 Z" fill="#ffffff" />
-              <path d="M 28 180 c -10 -4 -8 -16 4 -16 c 8 2 8 12 -4 16 Z" fill="#ffffff" />
-              <path d="M 34 126 c -8 -8 -2 -18 8 -14 c 8 4 6 14 -8 14 Z" fill="#ffffff" />
-              <path d="M 58 76 c -4 -12 8 -16 14 -8 c 4 8 -4 14 -14 8 Z" fill="#ffffff" />
-              <path d="M 98 38 c 0 -12 14 -12 16 -2 c 0 8 -10 10 -16 2 Z" fill="#ffffff" />
+
+            {/* Paper backing */}
+            <ellipse cx="150" cy="180" rx="98" ry="132" fill="#ffffff" />
+
+            {/* Centered Artwork */}
+            <image
+              href={imageUrl}
+              x="52"
+              y="48"
+              width="196"
+              height="264"
+              preserveAspectRatio="xMidYMid meet"
+              clipPath={`url(#${clipId})`}
+            />
+
+            {/* Leaf Garland Border & Rims */}
+            <g fill="none" stroke="#161616" strokeLinecap="round" strokeLinejoin="round">
+              <ellipse cx="150" cy="180" rx="108" ry="142" strokeWidth="3.2" />
+              <ellipse cx="150" cy="180" rx="98" ry="132" strokeWidth="2" />
+
+              {/* Hand-drawn Leaf details around the rim */}
+              <g strokeWidth="2.4">
+                <path d="M 150 24 c 6 -12 18 -8 16 4 c -6 8 -16 2 -16 -4 Z" fill="#ffffff" />
+                <path d="M 188 36 c 12 -8 20 2 12 12 c -8 6 -16 -2 -12 -12 Z" fill="#ffffff" />
+                <path d="M 226 64 c 12 -4 16 8 8 16 c -10 6 -16 -4 -8 -16 Z" fill="#ffffff" />
+                <path d="M 254 105 c 10 2 12 14 2 18 c -10 2 -12 -10 -2 -18 Z" fill="#ffffff" />
+                <path d="M 264 154 c 8 6 6 18 -4 18 c -8 -2 -8 -12 4 -18 Z" fill="#ffffff" />
+                <path d="M 260 205 c 8 8 2 18 -8 16 c -8 -4 -6 -14 8 -16 Z" fill="#ffffff" />
+                <path d="M 240 252 c 6 10 -4 18 -12 12 c -6 -6 0 -14 12 -12 Z" fill="#ffffff" />
+                <path d="M 206 298 c 2 12 -10 16 -16 8 c -4 -8 4 -14 16 -8 Z" fill="#ffffff" />
+                <path d="M 162 328 c -2 12 -14 12 -16 2 c 0 -8 10 -10 16 -2 Z" fill="#ffffff" />
+                <path d="M 116 322 c -8 10 -18 6 -16 -4 c 4 -8 14 -4 16 4 Z" fill="#ffffff" />
+                <path d="M 74 290 c -12 8 -18 -2 -10 -12 c 6 -6 16 -2 10 12 Z" fill="#ffffff" />
+                <path d="M 44 242 c -12 2 -14 -10 -4 -16 c 8 -4 14 6 4 16 Z" fill="#ffffff" />
+                <path d="M 32 188 c -10 -4 -8 -16 4 -16 c 8 2 8 12 -4 16 Z" fill="#ffffff" />
+                <path d="M 38 132 c -8 -8 -2 -18 8 -14 c 8 4 6 14 -8 14 Z" fill="#ffffff" />
+                <path d="M 64 80 c -4 -12 8 -16 14 -8 c 4 8 -4 14 -14 8 Z" fill="#ffffff" />
+                <path d="M 106 40 c 0 -12 14 -12 16 -2 c 0 8 -10 10 -16 2 Z" fill="#ffffff" />
+              </g>
             </g>
           </svg>
-          <div className="frame-artwork-clipper" style={{ clipPath: 'url(#clip-leafy-wreath)' }}>
-            <img src={imageUrl} alt={title} className="frame-inner-img" loading="lazy" />
-          </div>
         </div>
       )
 
@@ -100,52 +119,66 @@ export function DoodleFrame({ frameType, imageUrl, title }) {
     // ----------------------------------------------------
     case 'baroque-scroll':
       return (
-        <div className="doodle-frame-container frame-shape-rect" style={{ aspectRatio: '1 / 1.28' }}>
-          <svg className="frame-svg-overlay" viewBox="0 0 320 410" preserveAspectRatio="none">
+        <div className="doodle-frame-wrapper" style={{ aspectRatio: '320 / 400' }}>
+          <svg viewBox="0 0 320 400" className="doodle-svg-frame">
             <defs>
-              <clipPath id="clip-baroque-scroll">
-                <rect x="36" y="38" width="248" height="334" rx="4" />
+              <clipPath id={clipId}>
+                <rect x="42" y="46" width="236" height="308" rx="4" />
               </clipPath>
             </defs>
-            {/* Outer Frame Lines */}
-            <rect x="26" y="28" width="268" height="354" rx="6" fill="none" stroke="#161616" strokeWidth="3.2" />
-            <rect x="36" y="38" width="248" height="334" rx="4" fill="none" stroke="#161616" strokeWidth="1.8" />
-            
-            {/* Corner Scrollwork Filigree (Top Left) */}
-            <g stroke="#161616" strokeWidth="2.4" fill="none" strokeLinecap="round">
-              <path d="M 26 55 C 10 50, 8 30, 24 24 C 40 18, 55 12, 55 28" />
-              <path d="M 18 20 C 14 8, 28 6, 32 16" />
-              <circle cx="16" cy="18" r="3" fill="#161616" />
-              
-              {/* Corner Scrollwork (Top Right) */}
-              <path d="M 294 55 C 310 50, 312 30, 296 24 C 280 18, 265 12, 265 28" />
-              <path d="M 302 20 C 306 8, 292 6, 288 16" />
-              <circle cx="304" cy="18" r="3" fill="#161616" />
-              
-              {/* Corner Scrollwork (Bottom Left) */}
-              <path d="M 26 355 C 10 360, 8 380, 24 386 C 40 392, 55 398, 55 382" />
-              <path d="M 18 390 C 14 402, 28 404, 32 394" />
-              <circle cx="16" cy="392" r="3" fill="#161616" />
-              
-              {/* Corner Scrollwork (Bottom Right) */}
-              <path d="M 294 355 C 310 360, 312 380, 296 386 C 280 392, 265 398, 265 382" />
-              <path d="M 302 390 C 306 402, 292 404, 288 394" />
-              <circle cx="304" cy="392" r="3" fill="#161616" />
 
-              {/* Top & Bottom Crest Details */}
-              <path d="M 140 28 C 145 16, 175 16, 180 28" />
-              <circle cx="160" cy="16" r="3.5" fill="#161616" />
-              <path d="M 140 382 C 145 394, 175 394, 180 382" />
-              <circle cx="160" cy="394" r="3.5" fill="#161616" />
+            {/* Paper backing */}
+            <rect x="42" y="46" width="236" height="308" rx="4" fill="#ffffff" />
 
-              {/* Side Flourishes */}
-              <path d="M 26 190 C 16 195, 16 215, 26 220" />
-              <path d="M 294 190 C 304 195, 304 215, 294 220" />
+            {/* Centered Artwork */}
+            <image
+              href={imageUrl}
+              x="42"
+              y="46"
+              width="236"
+              height="308"
+              preserveAspectRatio="xMidYMid meet"
+              clipPath={`url(#${clipId})`}
+            />
+
+            {/* Hand-drawn Baroque Border & Corner Flourishes */}
+            <g fill="none" stroke="#161616" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="30" y="34" width="260" height="332" rx="6" strokeWidth="3.4" />
+              <rect x="42" y="46" width="236" height="308" rx="4" strokeWidth="2" />
+
+              {/* Corner Scrollwork (Top Left) */}
+              <g strokeWidth="2.5">
+                <path d="M 30 62 C 14 56, 12 34, 28 28 C 44 22, 62 16, 62 34" />
+                <path d="M 22 24 C 18 10, 32 8, 38 18" />
+                <circle cx="20" cy="22" r="3.5" fill="#161616" />
+
+                {/* Corner Scrollwork (Top Right) */}
+                <path d="M 290 62 C 306 56, 308 34, 292 28 C 276 22, 258 16, 258 34" />
+                <path d="M 298 24 C 302 10, 288 8, 282 18" />
+                <circle cx="300" cy="22" r="3.5" fill="#161616" />
+
+                {/* Corner Scrollwork (Bottom Left) */}
+                <path d="M 30 338 C 14 344, 12 366, 28 372 C 44 378, 62 384, 62 366" />
+                <path d="M 22 376 C 18 390, 32 392, 38 382" />
+                <circle cx="20" cy="378" r="3.5" fill="#161616" />
+
+                {/* Corner Scrollwork (Bottom Right) */}
+                <path d="M 290 338 C 306 344, 308 366, 292 372 C 276 378, 258 384, 258 366" />
+                <path d="M 298 376 C 302 390, 288 392, 282 382" />
+                <circle cx="300" cy="378" r="3.5" fill="#161616" />
+
+                {/* Top & Bottom Crests */}
+                <path d="M 140 34 C 146 20, 174 20, 180 34" />
+                <circle cx="160" cy="20" r="3.5" fill="#161616" />
+                <path d="M 140 366 C 146 380, 174 380, 180 366" />
+                <circle cx="160" cy="380" r="3.5" fill="#161616" />
+
+                {/* Side Flourishes */}
+                <path d="M 30 185 C 18 190, 18 210, 30 215" />
+                <path d="M 290 185 C 302 190, 302 210, 290 215" />
+              </g>
             </g>
           </svg>
-          <div className="frame-artwork-clipper" style={{ clipPath: 'url(#clip-baroque-scroll)' }}>
-            <img src={imageUrl} alt={title} className="frame-inner-img" loading="lazy" />
-          </div>
         </div>
       )
 
@@ -154,40 +187,50 @@ export function DoodleFrame({ frameType, imageUrl, title }) {
     // ----------------------------------------------------
     case 'striped-bevel':
       return (
-        <div className="doodle-frame-container frame-shape-rect" style={{ aspectRatio: '1.25 / 1' }}>
-          <svg className="frame-svg-overlay" viewBox="0 0 350 280" preserveAspectRatio="none">
+        <div className="doodle-frame-wrapper" style={{ aspectRatio: '340 / 280' }}>
+          <svg viewBox="0 0 340 280" className="doodle-svg-frame">
             <defs>
-              <clipPath id="clip-striped-bevel">
-                <rect x="36" y="36" width="278" height="208" rx="2" />
+              <clipPath id={clipId}>
+                <rect x="40" y="40" width="260" height="200" rx="2" />
               </clipPath>
             </defs>
-            {/* Outer Box */}
-            <rect x="14" y="14" width="322" height="252" rx="4" fill="none" stroke="#161616" strokeWidth="3.2" />
-            <rect x="36" y="36" width="278" height="208" rx="2" fill="none" stroke="#161616" strokeWidth="2.5" />
-            
-            {/* Diagonal Hatching along all 4 border strips */}
-            <g stroke="#161616" strokeWidth="1.8" strokeLinecap="round">
-              {/* Top border lines */}
-              {[30, 50, 70, 90, 110, 130, 150, 170, 190, 210, 230, 250, 270, 290, 310].map((x) => (
-                <line key={`top-${x}`} x1={x} y1="14" x2={x + 10} y2="36" />
-              ))}
-              {/* Bottom border lines */}
-              {[30, 50, 70, 90, 110, 130, 150, 170, 190, 210, 230, 250, 270, 290, 310].map((x) => (
-                <line key={`bot-${x}`} x1={x} y1="244" x2={x + 10} y2="266" />
-              ))}
-              {/* Left border lines */}
-              {[35, 55, 75, 95, 115, 135, 155, 175, 195, 215, 235].map((y) => (
-                <line key={`left-${y}`} x1="14" y1={y} x2="36" y2={y + 10} />
-              ))}
-              {/* Right border lines */}
-              {[35, 55, 75, 95, 115, 135, 155, 175, 195, 215, 235].map((y) => (
-                <line key={`right-${y}`} x1="314" y1={y} x2="336" y2={y + 10} />
-              ))}
+
+            {/* Paper backing */}
+            <rect x="40" y="40" width="260" height="200" rx="2" fill="#ffffff" />
+
+            {/* Centered Artwork */}
+            <image
+              href={imageUrl}
+              x="40"
+              y="40"
+              width="260"
+              height="200"
+              preserveAspectRatio="xMidYMid meet"
+              clipPath={`url(#${clipId})`}
+            />
+
+            {/* Striped Hatching Border Lines */}
+            <g fill="none" stroke="#161616" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="18" y="18" width="304" height="244" rx="4" strokeWidth="3.4" />
+              <rect x="40" y="40" width="260" height="200" rx="2" strokeWidth="2.5" />
+
+              {/* Diagonal Hatch Lines */}
+              <g strokeWidth="2">
+                {[35, 55, 75, 95, 115, 135, 155, 175, 195, 215, 235, 255, 275, 295].map((x) => (
+                  <line key={`top-${x}`} x1={x} y1="18" x2={x + 12} y2="40" />
+                ))}
+                {[35, 55, 75, 95, 115, 135, 155, 175, 195, 215, 235, 255, 275, 295].map((x) => (
+                  <line key={`bot-${x}`} x1={x} y1="240" x2={x + 12} y2="262" />
+                ))}
+                {[42, 62, 82, 102, 122, 142, 162, 182, 202, 222].map((y) => (
+                  <line key={`left-${y}`} x1="18" y1={y} x2="40" y2={y + 12} />
+                ))}
+                {[42, 62, 82, 102, 122, 142, 162, 182, 202, 222].map((y) => (
+                  <line key={`right-${y}`} x1="300" y1={y} x2="322" y2={y + 12} />
+                ))}
+              </g>
             </g>
           </svg>
-          <div className="frame-artwork-clipper" style={{ clipPath: 'url(#clip-striped-bevel)' }}>
-            <img src={imageUrl} alt={title} className="frame-inner-img" loading="lazy" />
-          </div>
         </div>
       )
 
@@ -196,32 +239,42 @@ export function DoodleFrame({ frameType, imageUrl, title }) {
     // ----------------------------------------------------
     case 'wavy-ribbon':
       return (
-        <div className="doodle-frame-container frame-shape-rect" style={{ aspectRatio: '1 / 1.18' }}>
-          <svg className="frame-svg-overlay" viewBox="0 0 300 354" preserveAspectRatio="none">
+        <div className="doodle-frame-wrapper" style={{ aspectRatio: '320 / 380' }}>
+          <svg viewBox="0 0 320 380" className="doodle-svg-frame">
             <defs>
-              <clipPath id="clip-wavy-ribbon">
-                <rect x="32" y="32" width="236" height="290" rx="3" />
+              <clipPath id={clipId}>
+                <rect x="42" y="42" width="236" height="296" rx="3" />
               </clipPath>
             </defs>
-            {/* Outer Continuous Wavy Ribbon Border */}
-            <path
-              d="M 20 20
-                 q 12 -8 25 0 q 12 -8 25 0 q 12 -8 25 0 q 12 -8 25 0 q 12 -8 25 0 q 12 -8 25 0 q 12 -8 25 0 q 12 -8 25 0 q 12 -8 25 0 q 12 -8 25 0
-                 q 8 12 0 25 q 8 12 0 25 q 8 12 0 25 q 8 12 0 25 q 8 12 0 25 q 8 12 0 25 q 8 12 0 25 q 8 12 0 25 q 8 12 0 25 q 8 12 0 25 q 8 12 0 25
-                 q -12 8 -25 0 q -12 8 -25 0 q -12 8 -25 0 q -12 8 -25 0 q -12 8 -25 0 q -12 8 -25 0 q -12 8 -25 0 q -12 8 -25 0 q -12 8 -25 0 q -12 8 -25 0
-                 q -8 -12 0 -25 q -8 -12 0 -25 q -8 -12 0 -25 q -8 -12 0 -25 q -8 -12 0 -25 q -8 -12 0 -25 q -8 -12 0 -25 q -8 -12 0 -25 q -8 -12 0 -25 q -8 -12 0 -25 Z"
-              fill="none"
-              stroke="#161616"
-              strokeWidth="3.2"
-              strokeLinecap="round"
+
+            {/* Paper backing */}
+            <rect x="42" y="42" width="236" height="296" rx="3" fill="#ffffff" />
+
+            {/* Centered Artwork */}
+            <image
+              href={imageUrl}
+              x="42"
+              y="42"
+              width="236"
+              height="296"
+              preserveAspectRatio="xMidYMid meet"
+              clipPath={`url(#${clipId})`}
             />
-            {/* Inner Clean Box */}
-            <rect x="32" y="32" width="236" height="290" rx="3" fill="none" stroke="#161616" strokeWidth="2.6" />
-            <rect x="40" y="40" width="220" height="274" rx="2" fill="none" stroke="#161616" strokeWidth="1.5" />
+
+            {/* Continuous Outer Wavy Ribbon */}
+            <g fill="none" stroke="#161616" strokeLinecap="round" strokeLinejoin="round">
+              <path
+                d="M 22 22
+                   q 14 -10 28 0 q 14 -10 28 0 q 14 -10 28 0 q 14 -10 28 0 q 14 -10 28 0 q 14 -10 28 0 q 14 -10 28 0 q 14 -10 28 0 q 14 -10 28 0 q 14 -10 28 0
+                   q 10 14 0 28 q 10 14 0 28 q 10 14 0 28 q 10 14 0 28 q 10 14 0 28 q 10 14 0 28 q 10 14 0 28 q 10 14 0 28 q 10 14 0 28 q 10 14 0 28 q 10 14 0 28
+                   q -14 10 -28 0 q -14 10 -28 0 q -14 10 -28 0 q -14 10 -28 0 q -14 10 -28 0 q -14 10 -28 0 q -14 10 -28 0 q -14 10 -28 0 q -14 10 -28 0 q -14 10 -28 0
+                   q -10 -14 0 -28 q -10 -14 0 -28 q -10 -14 0 -28 q -10 -14 0 -28 q -10 -14 0 -28 q -10 -14 0 -28 q -10 -14 0 -28 q -10 -14 0 -28 q -10 -14 0 -28 q -10 -14 0 -28 Z"
+                strokeWidth="3.2"
+              />
+              <rect x="42" y="42" width="236" height="296" rx="3" strokeWidth="2.6" />
+              <rect x="48" y="48" width="224" height="284" rx="2" strokeWidth="1.5" />
+            </g>
           </svg>
-          <div className="frame-artwork-clipper" style={{ clipPath: 'url(#clip-wavy-ribbon)' }}>
-            <img src={imageUrl} alt={title} className="frame-inner-img" loading="lazy" />
-          </div>
         </div>
       )
 
@@ -230,32 +283,47 @@ export function DoodleFrame({ frameType, imageUrl, title }) {
     // ----------------------------------------------------
     case 'sunray-cameo':
       return (
-        <div className="doodle-frame-container frame-shape-oval" style={{ aspectRatio: '1 / 1.35' }}>
-          <svg className="frame-svg-overlay" viewBox="0 0 280 378" preserveAspectRatio="none">
+        <div className="doodle-frame-wrapper" style={{ aspectRatio: '300 / 380' }}>
+          <svg viewBox="0 0 300 380" className="doodle-svg-frame">
             <defs>
-              <clipPath id="clip-sunray-cameo">
-                <ellipse cx="140" cy="189" rx="85" ry="124" />
+              <clipPath id={clipId}>
+                <ellipse cx="150" cy="190" rx="90" ry="128" />
               </clipPath>
             </defs>
-            {/* Beaded Outer Ring */}
-            <ellipse cx="140" cy="189" rx="124" ry="168" fill="none" stroke="#161616" strokeWidth="3.2" />
-            <ellipse cx="140" cy="189" rx="105" ry="144" fill="none" stroke="#161616" strokeWidth="2.2" />
-            <ellipse cx="140" cy="189" rx="85" ry="124" fill="none" stroke="#161616" strokeWidth="2.8" />
-            {/* Radial Hatching Rays between rings */}
-            <g stroke="#161616" strokeWidth="1.8">
-              {[...Array(24)].map((_, i) => {
-                const angle = (i * 15 * Math.PI) / 180
-                const x1 = 140 + 85 * Math.cos(angle)
-                const y1 = 189 + 124 * Math.sin(angle)
-                const x2 = 140 + 105 * Math.cos(angle)
-                const y2 = 189 + 144 * Math.sin(angle)
-                return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
-              })}
+
+            {/* Paper backing */}
+            <ellipse cx="150" cy="190" rx="90" ry="128" fill="#ffffff" />
+
+            {/* Centered Artwork */}
+            <image
+              href={imageUrl}
+              x="60"
+              y="62"
+              width="180"
+              height="256"
+              preserveAspectRatio="xMidYMid meet"
+              clipPath={`url(#${clipId})`}
+            />
+
+            {/* Sunburst Beaded Ring and Radial Lines */}
+            <g fill="none" stroke="#161616" strokeLinecap="round" strokeLinejoin="round">
+              <ellipse cx="150" cy="190" rx="130" ry="170" strokeWidth="3.4" />
+              <ellipse cx="150" cy="190" rx="110" ry="148" strokeWidth="2.4" />
+              <ellipse cx="150" cy="190" rx="90" ry="128" strokeWidth="2.8" />
+
+              {/* Radial Hatching Rays */}
+              <g strokeWidth="2">
+                {[...Array(24)].map((_, i) => {
+                  const angle = (i * 15 * Math.PI) / 180
+                  const x1 = 150 + 90 * Math.cos(angle)
+                  const y1 = 190 + 128 * Math.sin(angle)
+                  const x2 = 150 + 110 * Math.cos(angle)
+                  const y2 = 190 + 148 * Math.sin(angle)
+                  return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
+                })}
+              </g>
             </g>
           </svg>
-          <div className="frame-artwork-clipper" style={{ clipPath: 'url(#clip-sunray-cameo)' }}>
-            <img src={imageUrl} alt={title} className="frame-inner-img" loading="lazy" />
-          </div>
         </div>
       )
 
@@ -264,26 +332,39 @@ export function DoodleFrame({ frameType, imageUrl, title }) {
     // ----------------------------------------------------
     case 'classic-mitred':
       return (
-        <div className="doodle-frame-container frame-shape-rect" style={{ aspectRatio: '1.2 / 1' }}>
-          <svg className="frame-svg-overlay" viewBox="0 0 340 284" preserveAspectRatio="none">
+        <div className="doodle-frame-wrapper" style={{ aspectRatio: '340 / 280' }}>
+          <svg viewBox="0 0 340 280" className="doodle-svg-frame">
             <defs>
-              <clipPath id="clip-classic-mitred">
-                <rect x="34" y="34" width="272" height="216" rx="2" />
+              <clipPath id={clipId}>
+                <rect x="38" y="38" width="264" height="204" rx="2" />
               </clipPath>
             </defs>
-            {/* Outer Rectangle */}
-            <rect x="14" y="14" width="312" height="256" rx="4" fill="none" stroke="#161616" strokeWidth="3.4" />
-            {/* Inner Rectangle */}
-            <rect x="34" y="34" width="272" height="216" rx="2" fill="none" stroke="#161616" strokeWidth="2.4" />
-            {/* 45 Degree Corner Mitres */}
-            <line x1="14" y1="14" x2="34" y2="34" stroke="#161616" strokeWidth="2.6" />
-            <line x1="326" y1="14" x2="306" y2="34" stroke="#161616" strokeWidth="2.6" />
-            <line x1="14" y1="270" x2="34" y2="250" stroke="#161616" strokeWidth="2.6" />
-            <line x1="326" y1="270" x2="306" y2="250" stroke="#161616" strokeWidth="2.6" />
+
+            {/* Paper backing */}
+            <rect x="38" y="38" width="264" height="204" rx="2" fill="#ffffff" />
+
+            {/* Centered Artwork */}
+            <image
+              href={imageUrl}
+              x="38"
+              y="38"
+              width="264"
+              height="204"
+              preserveAspectRatio="xMidYMid meet"
+              clipPath={`url(#${clipId})`}
+            />
+
+            {/* Double Box with Corner Mitres */}
+            <g fill="none" stroke="#161616" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="16" y="16" width="308" height="248" rx="4" strokeWidth="3.4" />
+              <rect x="38" y="38" width="264" height="204" rx="2" strokeWidth="2.4" />
+
+              <line x1="16" y1="16" x2="38" y2="38" strokeWidth="2.6" />
+              <line x1="324" y1="16" x2="302" y2="38" strokeWidth="2.6" />
+              <line x1="16" y1="264" x2="38" y2="242" strokeWidth="2.6" />
+              <line x1="324" y1="264" x2="302" y2="242" strokeWidth="2.6" />
+            </g>
           </svg>
-          <div className="frame-artwork-clipper" style={{ clipPath: 'url(#clip-classic-mitred)' }}>
-            <img src={imageUrl} alt={title} className="frame-inner-img" loading="lazy" />
-          </div>
         </div>
       )
 
@@ -293,30 +374,45 @@ export function DoodleFrame({ frameType, imageUrl, title }) {
     case 'tall-flourish':
     default:
       return (
-        <div className="doodle-frame-container frame-shape-rect" style={{ aspectRatio: '1 / 1.55' }}>
-          <svg className="frame-svg-overlay" viewBox="0 0 240 372" preserveAspectRatio="none">
+        <div className="doodle-frame-wrapper" style={{ aspectRatio: '260 / 390' }}>
+          <svg viewBox="0 0 260 390" className="doodle-svg-frame">
             <defs>
-              <clipPath id="clip-tall-flourish">
-                <rect x="24" y="26" width="192" height="320" rx="3" />
+              <clipPath id={clipId}>
+                <rect x="28" y="32" width="204" height="326" rx="3" />
               </clipPath>
             </defs>
-            {/* Outer Box */}
-            <rect x="16" y="18" width="208" height="336" rx="4" fill="none" stroke="#161616" strokeWidth="3" />
-            <rect x="24" y="26" width="192" height="320" rx="3" fill="none" stroke="#161616" strokeWidth="1.8" />
-            {/* Top Crown & Corner Flourishes */}
-            <g stroke="#161616" strokeWidth="2.2" fill="none" strokeLinecap="round">
-              <path d="M 105 18 C 110 8, 130 8, 135 18" />
-              <circle cx="120" cy="8" r="3" fill="#161616" />
-              {/* Corner curls */}
-              <path d="M 16 36 C 8 32, 8 22, 16 18 C 24 14, 32 14, 36 26" />
-              <path d="M 224 36 C 232 32, 232 22, 224 18 C 216 14, 208 14, 204 26" />
-              <path d="M 16 336 C 8 340, 8 350, 16 354 C 24 358, 32 358, 36 346" />
-              <path d="M 224 336 C 232 340, 232 350, 224 354 C 216 358, 208 358, 204 346" />
+
+            {/* Paper backing */}
+            <rect x="28" y="32" width="204" height="326" rx="3" fill="#ffffff" />
+
+            {/* Centered Artwork */}
+            <image
+              href={imageUrl}
+              x="28"
+              y="32"
+              width="204"
+              height="326"
+              preserveAspectRatio="xMidYMid meet"
+              clipPath={`url(#${clipId})`}
+            />
+
+            {/* Tall Frame Molding & Top Crown */}
+            <g fill="none" stroke="#161616" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="18" y="22" width="224" height="346" rx="4" strokeWidth="3.2" />
+              <rect x="28" y="32" width="204" height="326" rx="3" strokeWidth="2" />
+
+              <g strokeWidth="2.4">
+                <path d="M 115 22 C 120 10, 140 10, 145 22" />
+                <circle cx="130" cy="10" r="3.5" fill="#161616" />
+
+                {/* Corner curls */}
+                <path d="M 18 42 C 10 38, 10 26, 18 22 C 26 18, 36 18, 40 30" />
+                <path d="M 242 42 C 250 38, 250 26, 242 22 C 234 18, 224 18, 220 30" />
+                <path d="M 18 348 C 10 352, 10 364, 18 368 C 26 372, 36 372, 40 360" />
+                <path d="M 242 348 C 250 352, 250 364, 242 368 C 234 372, 224 372, 220 360" />
+              </g>
             </g>
           </svg>
-          <div className="frame-artwork-clipper" style={{ clipPath: 'url(#clip-tall-flourish)' }}>
-            <img src={imageUrl} alt={title} className="frame-inner-img" loading="lazy" />
-          </div>
         </div>
       )
   }
