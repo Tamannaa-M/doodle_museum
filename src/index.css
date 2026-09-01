@@ -1384,7 +1384,6 @@ html, body {
 .hair-btn-icon.hair-wavy-lob::before { height: 30px; border-radius: 50% 50% 45% 45%; }
 .hair-btn-icon.hair-blank-face::before { display: none; }
 @media (max-width: 620px) { .hair-options-carousel { grid-template-columns: repeat(3, 1fr); } }
-}
 
 .hair-btn-label {
   font-family: var(--font-doodle);
