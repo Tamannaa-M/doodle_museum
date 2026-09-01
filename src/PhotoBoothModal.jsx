@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { RenderAvatar } from './AvatarLibrary'
+import { generateCaricature } from './CaricatureEngine'
 
 /* ─────────────────────────────────────────────────────────────────────────────
    GEMINI IMAGE TRANSFORMATION
@@ -20,7 +21,7 @@ Style rules:
 - Warm, slightly desaturated color palette — creamy skin, soft warm shadows
 - Hair rendered with smooth flowing strands and gentle highlights
 - Background simplified into soft shapes matching the original colors
-- Overall feel: warm, cute, polished anime illustration — NOT a caricature
+- Overall feel: warm, cute, polished anime illustration — NEVER scary, creepy, horror, distorted, or grotesque
 
 Output: A single illustration image, no text, no borders, same composition as the original.`
 
@@ -32,7 +33,7 @@ Style rules:
 - Big soft eyes with subtle highlights
 - Gentle blush marks on cheeks
 - Background becomes a soft gradient wash of color
-- Very clean, gentle, and dreamy overall feel — like a shoujo manga panel
+- Very clean, gentle, and dreamy overall feel — like a shoujo manga panel, NEVER scary or horror-like
 
 Output: A single illustration image, no text, no borders.`
 
@@ -44,6 +45,8 @@ Style rules:
 - Hair rendered with bold flowing ink strokes
 - Face slightly simplified and stylized in manga proportions
 - Background simplified to clean geometric lines or crosshatch
+- Use grayscale only: pure black, white, and gray ink. Do not include any color.
+- Keep the mood sweet, friendly, and cute — never scary, horror-like, or unsettling.
 
 Output: A single black and white illustration image, no text, no borders.`
 
@@ -67,9 +70,11 @@ function parseDataUrl(dataUrl) {
  * Call Gemini Image Generation REST API.
  * Returns a data-URL string for the generated image.
  */
-async function callGeminiImageAPI(photoDataUrl, styleMode, apiKey) {
+async function callGeminiImageAPI(photoDataUrl, styleMode, apiKey, poseInstruction) {
+  return generateCaricature(photoDataUrl, styleMode, poseInstruction)
+  /*
   const { mimeType, base64 } = parseDataUrl(photoDataUrl)
-  const prompt = STYLE_PROMPTS[styleMode] || ANIME_PROMPT
+  const prompt = `${STYLE_PROMPTS[styleMode] || ANIME_PROMPT}\n\nPose direction: ${poseInstruction}. Keep the same person recognizable. Output one portrait only.`
 
   const body = {
     model: 'gemini-3.1-flash-image',
@@ -110,7 +115,7 @@ async function callGeminiImageAPI(photoDataUrl, styleMode, apiKey) {
     throw new Error('No image in Gemini API response')
   }
 
-  return `data:image/png;base64,${imgData}`
+  return `data:image/png;base64,${imgData}` */
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -177,11 +182,11 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
   const streamRef = useRef(null)
   const uploadInputRef = useRef(null)
 
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem(LS_KEY) || '')
+  const apiKey = 'local-browser-comic'
   const [cameraActive, setCameraActive] = useState(false)
   const [cameraError, setCameraError] = useState(false)
   const [photoSnap, setPhotoSnap] = useState(null)         // original data-url
-  const [animeSnap, setAnimeSnap] = useState(null)         // Gemini-generated result
+  const [animeSnaps, setAnimeSnaps] = useState([])         // two Gemini-generated poses
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingMsg, setProcessingMsg] = useState('')
   const [apiError, setApiError] = useState('')
@@ -215,7 +220,10 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
   }
 
   function triggerSnapshot() {
-    if (!cameraActive) { uploadInputRef.current?.click(); return }
+    if (!cameraActive) {
+      setCameraError(true)
+      return
+    }
     let c = 3
     setTimerCount(c)
     const iv = setInterval(() => {
@@ -252,15 +260,17 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
   async function processPhoto(src) {
     setPhotoSnap(src)
-    setAnimeSnap(null)
+    setAnimeSnaps([])
     setApiError('')
     setIsProcessing(true)
-    setProcessingMsg('✨ Sending to Gemini AI...')
+    setProcessingMsg('✨ Creating two cute poses...')
 
     try {
-      setProcessingMsg('🎨 Generating your cute anime illustration...')
-      const result = await callGeminiImageAPI(src, filterMode, apiKey)
-      setAnimeSnap(result)
+      setProcessingMsg('🎨 Drawing pose 1 of 2...')
+      const first = await callGeminiImageAPI(src, filterMode, apiKey, 'a cheerful front-facing portrait with a gentle smile')
+      setProcessingMsg('🎨 Drawing pose 2 of 2...')
+      const second = await callGeminiImageAPI(src, filterMode, apiKey, 'a playful three-quarter portrait, waving one hand')
+      setAnimeSnaps([first, second])
     } catch (err) {
       console.error('Gemini API error:', err)
       setApiError(err.message || 'Something went wrong. Check your API key.')
@@ -279,15 +289,12 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
   function resetPhoto() {
     setPhotoSnap(null)
-    setAnimeSnap(null)
+    setAnimeSnaps([])
     setApiError('')
     if (!cameraActive) startCamera()
   }
 
-  function clearApiKey() {
-    localStorage.removeItem(LS_KEY)
-    setApiKey('')
-  }
+  function clearApiKey() {}
 
   // ── Download strip as PNG ──
   function downloadStrip() {
@@ -320,19 +327,19 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
     const loadAll = () => {
       drawFrame(y1)
-      if (animeSnap) {
+      if (animeSnaps[0]) {
         const i1 = new Image(); i1.crossOrigin = 'anonymous'
         i1.onload = () => { ctx.drawImage(i1, fX + 3, y1 + 3, fW - 6, fH - 6); doFrame2() }
-        i1.src = animeSnap
+        i1.src = animeSnaps[0]
       } else doFrame2()
     }
 
     function doFrame2() {
       drawFrame(y2)
-      if (doodle?.image_url) {
+      if (animeSnaps[1]) {
         const i2 = new Image(); i2.crossOrigin = 'anonymous'
         i2.onload = () => { ctx.drawImage(i2, fX + 8, y2 + 8, fW - 16, fH - 16); doFrame3() }
-        i2.src = doodle.image_url
+        i2.src = animeSnaps[1]
       } else doFrame3()
     }
 
@@ -359,22 +366,6 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
     loadAll()
   }
 
-  // Show API key gate if key not set
-  if (!apiKey) {
-    return (
-      <div className="modal-backdrop" onClick={onClose}>
-        <div className="photobooth-modal-card" onClick={e => e.stopPropagation()} role="dialog">
-          <button className="modal-close-btn" onClick={onClose}>✕</button>
-          <div className="cardboard-booth-header">
-            <div className="cardboard-badge">LIVE doodle</div>
-            <h2 className="cardboard-title">Photo Booth</h2>
-          </div>
-          <ApiKeyGate onKeySet={k => setApiKey(k)} />
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
@@ -390,7 +381,7 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
           <div className="cardboard-badge">LIVE doodle</div>
           <h2 className="cardboard-title">Photo Booth</h2>
           <p className="cardboard-subtitle">
-            Take or upload your photo → Gemini AI turns it into a cute anime illustration ✨
+            Take or upload your photo → your browser makes a cute comic strip ✨
           </p>
         </div>
 
@@ -401,14 +392,14 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
             {/* Viewfinder */}
             <div className="camera-viewfinder-box">
-              {animeSnap ? (
+              {animeSnaps[0] ? (
                 /* Generated anime image fills the viewfinder */
-                <img src={animeSnap} alt="Anime illustration" className="captured-photo-preview" />
+                <img src={animeSnaps[0]} alt="First cute anime pose" className={`captured-photo-preview ${filterMode === 'comic-bw' ? 'bw-result' : ''}`} />
               ) : isProcessing ? (
                 <div className="ai-processing-screen">
                   <div className="ai-processing-spinner">✨</div>
                   <p className="ai-processing-text">{processingMsg}</p>
-                  <p className="ai-processing-sub">Gemini AI is drawing you ☁️</p>
+                  <p className="ai-processing-sub">No key or account needed ☁️</p>
                 </div>
               ) : photoSnap ? (
                 /* Show original while waiting for re-process */
@@ -428,7 +419,7 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
               )}
 
               {/* Original photo pip when anime result is shown */}
-              {photoSnap && animeSnap && (
+              {photoSnap && animeSnaps.length > 0 && (
                 <div className="original-thumb-pip">
                   <img src={photoSnap} alt="Original" />
                   <span>Original</span>
@@ -466,7 +457,7 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
             {/* Action buttons — Snapshot (camera) + Upload (separate) */}
             <div className="camera-action-toolbar">
-              {animeSnap || photoSnap ? (
+              {animeSnaps.length > 0 || photoSnap ? (
                 <button type="button" className="booth-btn secondary" onClick={resetPhoto}>
                   🔄 Try Again
                 </button>
@@ -476,9 +467,9 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                   className="booth-btn primary"
                   onClick={triggerSnapshot}
                   disabled={!cameraActive}
-                  title={cameraActive ? 'Take a selfie with countdown' : 'Camera not available'}
+                  title={cameraActive ? 'Take a selfie with countdown' : 'Camera permission is needed to take a photo'}
                 >
-                  📸 Take Snapshot
+                📸 Take Photo
                 </button>
               )}
 
@@ -496,14 +487,11 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
             {cameraError && (
               <p className="camera-fallback-notice">
-                💡 On mobile, "Upload Photo" opens your camera too!
+                💡 Camera access was not granted. You can allow it in your browser settings, or choose an existing image with Upload Photo.
               </p>
             )}
 
             {/* API key reset */}
-            <button type="button" className="api-key-tiny-reset" onClick={clearApiKey} title="Change API key">
-              🔑 API key set &nbsp;•&nbsp; change
-            </button>
           </div>
 
           {/* ── RIGHT: Preview Strip ── */}
@@ -517,8 +505,8 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
               {/* Frame 1 — Anime illustration */}
               <div className="strip-frame">
-                {animeSnap ? (
-                  <img src={animeSnap} alt="Anime illustration" className="strip-img" />
+              {animeSnaps[0] ? (
+                  <img src={animeSnaps[0]} alt="Cute anime pose one" className={`strip-img ${filterMode === 'comic-bw' ? 'bw-result' : ''}`} />
                 ) : isProcessing ? (
                   <div className="strip-frame-empty">
                     <span>✨</span>
@@ -527,19 +515,19 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                 ) : (
                   <div className="strip-frame-empty">
                     <span>📸</span>
-                    <p>Your cute anime version</p>
+                    <p>Cute pose one</p>
                   </div>
                 )}
               </div>
 
-              {/* Frame 2 — Doodle artwork */}
+              {/* Frame 2 — second cute pose */}
               <div className="strip-frame">
-                {doodle?.image_url ? (
-                  <img src={doodle.image_url} alt="Artwork" className="strip-img" />
+                {animeSnaps[1] ? (
+                  <img src={animeSnaps[1]} alt="Cute anime pose two" className={`strip-img ${filterMode === 'comic-bw' ? 'bw-result' : ''}`} />
                 ) : (
                   <div className="strip-frame-empty">
-                    <span>🎨</span>
-                    <p>Your doodle</p>
+                    <span>✨</span>
+                    <p>Cute pose two</p>
                   </div>
                 )}
               </div>
@@ -568,8 +556,8 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
               type="button"
               className="download-strip-btn"
               onClick={downloadStrip}
-              disabled={!animeSnap}
-              title={animeSnap ? 'Download your photo strip!' : 'Take a photo first'}
+              disabled={animeSnaps.length !== 2}
+              title={animeSnaps.length === 2 ? 'Download your photo strip!' : 'Take a photo first'}
             >
               📥 Download Photostrip (.PNG)
             </button>
