@@ -207,7 +207,7 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
       const illustration = await makeIllustration(src)
       setAnimeSnaps([illustration])
     } catch (err) {
-      setApiError('Could not draw this photo. Please try another one.')
+      setApiError(err?.message || 'Could not draw this photo. Please try another one.')
     } finally {
       setIsProcessing(false)
       setProcessingMsg('')
