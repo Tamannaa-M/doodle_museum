@@ -57,10 +57,9 @@ ctx.setTransform(1, 0, 0, 1, 0, 0)
 
       // 3. Compute Anime Ink Outlines (Sobel Edge Detection)
       const isEdge = new Uint8Array(width * height)
-      // This high threshold deliberately keeps only the large, friendly facial
-      // contours. It avoids the dense, harsh texture that made the old result
-      // look frightening on phone photos.
-      const edgeThreshold = style === 'clean-line' ? 115 : style === 'soft-sketch' ? 22 : 30
+      // Keep facial contours and hair while avoiding the dense texture that
+      // made the old result look frightening on phone photos.
+      const edgeThreshold = style === 'clean-line' ? 58 : style === 'soft-sketch' ? 22 : 30
 
       for (let y = 1; y < height - 1; y++) {
         for (let x = 1; x < width - 1; x++) {
@@ -97,7 +96,7 @@ ctx.setTransform(1, 0, 0, 1, 0, 0)
 
           if (style === 'clean-line') {
             // Clean white paper + soft charcoal contours, like a simple doodle trace.
-            const ink = isEdge[idx] ? 58 : 255
+            const ink = isEdge[idx] ? 45 : 255
             out[px] = ink
             out[px + 1] = ink
             out[px + 2] = ink
