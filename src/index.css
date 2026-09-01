@@ -1322,10 +1322,11 @@ html, body {
 
 /* Hairstyle Carousel (Reference Image 2) */
 .hair-options-carousel {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(72px, 1fr));
   gap: 8px;
-  overflow-x: auto;
-  padding: 4px 2px 10px;
+  overflow: hidden;
+  padding: 4px 0;
   margin-bottom: 8px;
   scrollbar-width: thin;
 }
@@ -1335,7 +1336,7 @@ html, body {
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  min-width: 82px;
+  min-width: 0;
   padding: 6px 4px;
   background: #ffffff;
   border: 2px solid #181512;
@@ -1357,7 +1358,32 @@ html, body {
 }
 
 .hair-btn-icon {
-  font-size: 18px;
+  width: 34px;
+  height: 28px;
+  display: block;
+  position: relative;
+  border: 2px solid #181512;
+  border-radius: 50% 50% 45% 45%;
+  background: #fce5c8;
+}
+.hair-btn-icon::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: -7px;
+  height: 16px;
+  background: #24201d;
+  border: 2px solid #181512;
+  border-radius: 50% 50% 22% 22%;
+}
+.hair-btn-icon.hair-pigtails-bows::after { content: '●  ●'; position: absolute; top: 2px; left: -12px; font-size: 11px; color: #24201d; }
+.hair-btn-icon.hair-bob-star::before { border-radius: 50% 50% 10% 10%; }
+.hair-btn-icon.hair-space-buns::after { content: '●   ●'; position: absolute; top: -15px; left: 1px; font-size: 13px; color: #24201d; }
+.hair-btn-icon.hair-spiky-boy::before { clip-path: polygon(0 100%, 12% 5%, 29% 62%, 48% 0, 65% 62%, 87% 8%, 100% 100%); border-radius: 0; }
+.hair-btn-icon.hair-wavy-lob::before { height: 30px; border-radius: 50% 50% 45% 45%; }
+.hair-btn-icon.hair-blank-face::before { display: none; }
+@media (max-width: 620px) { .hair-options-carousel { grid-template-columns: repeat(3, 1fr); } }
 }
 
 .hair-btn-label {

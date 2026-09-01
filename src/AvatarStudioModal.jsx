@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { PRESET_AVATARS, HAIRSTYLE_TEMPLATES, RenderAvatar } from './AvatarLibrary'
+import { PRESET_AVATARS, HAIRSTYLE_TEMPLATES, HAIRSTYLE_BY_ID, RenderAvatar } from './AvatarLibrary'
 
 export function AvatarStudioModal({
   defaultTitle,
@@ -45,7 +45,7 @@ export function AvatarStudioModal({
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     // Draw chosen hairstyle template
-    const template = HAIRSTYLE_TEMPLATES.find((h) => h.id === hairId)
+    const template = HAIRSTYLE_BY_ID[hairId] || HAIRSTYLE_BY_ID['hair-blank-face']
     if (template && template.drawBase) {
       template.drawBase(ctx, canvas.width, canvas.height)
     }
@@ -257,7 +257,7 @@ export function AvatarStudioModal({
                   onClick={() => setSelectedHair(hair.id)}
                   title={hair.name}
                 >
-                  <span className="hair-btn-icon">💇</span>
+                  <span className={`hair-btn-icon ${hair.id}`} aria-hidden="true" />
                   <span className="hair-btn-label">{hair.name}</span>
                 </button>
               ))}

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { RenderAvatar } from './AvatarLibrary'
-import { generateCaricature } from './CaricatureEngine'
 
 /* ─────────────────────────────────────────────────────────────────────────────
    GEMINI IMAGE TRANSFORMATION
@@ -71,7 +70,15 @@ function parseDataUrl(dataUrl) {
  * Returns a data-URL string for the generated image.
  */
 async function callGeminiImageAPI(photoDataUrl, styleMode, apiKey, poseInstruction) {
-  return generateCaricature(photoDataUrl, styleMode, poseInstruction)
+  const { mimeType, base64 } = parseDataUrl(photoDataUrl)
+  const response = await fetch('/api/transform', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image: base64, mimeType, style: styleMode, pose: poseInstruction }),
+  })
+  const payload = await response.json()
+  if (!response.ok) throw new Error(payload.error || 'Could not create the illustration.')
+  return payload.image
   /*
   const { mimeType, base64 } = parseDataUrl(photoDataUrl)
   const prompt = `${STYLE_PROMPTS[styleMode] || ANIME_PROMPT}\n\nPose direction: ${poseInstruction}. Keep the same person recognizable. Output one portrait only.`

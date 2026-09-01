@@ -172,6 +172,10 @@ export const HAIRSTYLE_TEMPLATES = [
   },
 ]
 
+export const HAIRSTYLE_BY_ID = Object.fromEntries(
+  HAIRSTYLE_TEMPLATES.map((template) => [template.id, template])
+)
+
 /**
  * Curated Hand-Drawn Doodle Avatars (from Reference Image 1 & 2)
  */
