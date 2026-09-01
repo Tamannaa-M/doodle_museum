@@ -1,183 +1,55 @@
 import { useEffect, useRef, useState } from 'react'
 import { RenderAvatar } from './AvatarLibrary'
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   GEMINI IMAGE TRANSFORMATION
-   Uses the Gemini 3.1 Flash Image model (Nano Banana 2) to convert a real
-   photo into a cute anime-style illustration — exactly like the reference.
-   REST endpoint: POST /v1beta/interactions
-   Model: gemini-3.1-flash-image
-   Input: [ { type:"text", text: PROMPT }, { type:"image", data: base64, mime_type } ]
-   Output: interaction.output_image.data (base64 PNG)
-───────────────────────────────────────────────────────────────────────────── */
+/* Instant local photo-strip panels. Nothing is uploaded and no account, key,
+   server function, or AI quota is required. */
+function makeCutePanel(photoDataUrl, styleMode, variant) {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => {
+      const width = 720
+      const height = 900
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      const ratio = Math.max(width / image.width, height / image.height)
+      const drawWidth = image.width * ratio
+      const drawHeight = image.height * ratio
+      const offsetX = (width - drawWidth) / 2 + (variant ? Math.min(42, drawWidth * 0.04) : -Math.min(18, drawWidth * 0.02))
+      const offsetY = (height - drawHeight) / 2
 
-const ANIME_PROMPT = `Transform this photo into a cute, high-quality anime illustration.
-Style rules:
-- Keep the person's face shape, hair color, and clothing recognizable
-- Large, luminous anime eyes with sparkling highlights and soft irises
-- Clean, smooth skin with gentle warm cel-shading and rosy blush on cheeks
-- Soft ink outlines — not harsh, more like a webtoon or Studio Ghibli style
-- Warm, slightly desaturated color palette — creamy skin, soft warm shadows
-- Hair rendered with smooth flowing strands and gentle highlights
-- Background simplified into soft shapes matching the original colors
-- Overall feel: warm, cute, polished anime illustration — NEVER scary, creepy, horror, distorted, or grotesque
+      ctx.fillStyle = '#fffaf3'
+      ctx.fillRect(0, 0, width, height)
+      if (styleMode === 'comic-bw') ctx.filter = 'grayscale(1) contrast(1.12) brightness(1.16)'
+      else if (styleMode === 'soft-sketch') ctx.filter = 'saturate(.72) brightness(1.12) contrast(.92) sepia(.09)'
+      else ctx.filter = 'saturate(.88) brightness(1.08) contrast(.96)'
 
-Output: A single illustration image, no text, no borders, same composition as the original.`
+      if (variant) {
+        ctx.save()
+        ctx.translate(width, 0)
+        ctx.scale(-1, 1)
+        ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight)
+        ctx.restore()
+      } else ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight)
+      ctx.filter = 'none'
 
-const SOFT_SKETCH_PROMPT = `Transform this photo into a soft pastel anime sketch illustration.
-Style rules:
-- Keep the person's likeness but soften all features
-- Pencil-sketch-style outlines that are delicate and hand-drawn looking
-- Soft watercolor-like fills — pale pinks, creams, light blues
-- Big soft eyes with subtle highlights
-- Gentle blush marks on cheeks
-- Background becomes a soft gradient wash of color
-- Very clean, gentle, and dreamy overall feel — like a shoujo manga panel, NEVER scary or horror-like
-
-Output: A single illustration image, no text, no borders.`
-
-const MANGA_PROMPT = `Transform this photo into a classic black-and-white manga illustration.
-Style rules:
-- Clean, confident ink lines — bold outlines, fine detail lines
-- High-contrast black and white with manga screen-tone hatching for shading
-- Expressive anime eyes with manga sparkle lines
-- Hair rendered with bold flowing ink strokes
-- Face slightly simplified and stylized in manga proportions
-- Background simplified to clean geometric lines or crosshatch
-- Use grayscale only: pure black, white, and gray ink. Do not include any color.
-- Keep the mood sweet, friendly, and cute — never scary, horror-like, or unsettling.
-
-Output: A single black and white illustration image, no text, no borders.`
-
-const STYLE_PROMPTS = {
-  'anime-color': ANIME_PROMPT,
-  'soft-sketch': SOFT_SKETCH_PROMPT,
-  'comic-bw': MANGA_PROMPT,
-}
-
-/**
- * Strip a data-URL prefix to get raw base64.
- * Also returns the mime type.
- */
-function parseDataUrl(dataUrl) {
-  const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/)
-  if (!m) throw new Error('Not a valid data URL')
-  return { mimeType: m[1], base64: m[2] }
-}
-
-/**
- * Call Gemini Image Generation REST API.
- * Returns a data-URL string for the generated image.
- */
-async function callGeminiImageAPI(photoDataUrl, styleMode, apiKey, poseInstruction) {
-  const { mimeType, base64 } = parseDataUrl(photoDataUrl)
-  const response = await fetch('/api/transform', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ image: base64, mimeType, style: styleMode, pose: poseInstruction }),
-  })
-  const payload = await response.json()
-  if (!response.ok) throw new Error(payload.error || 'Could not create the illustration.')
-  return payload.image
-  /*
-  const { mimeType, base64 } = parseDataUrl(photoDataUrl)
-  const prompt = `${STYLE_PROMPTS[styleMode] || ANIME_PROMPT}\n\nPose direction: ${poseInstruction}. Keep the same person recognizable. Output one portrait only.`
-
-  const body = {
-    model: 'gemini-3.1-flash-image',
-    input: [
-      { type: 'text', text: prompt },
-      { type: 'image', mime_type: mimeType, data: base64 },
-    ],
-  }
-
-  const resp = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/interactions?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }
-  )
-
-  if (!resp.ok) {
-    const errText = await resp.text()
-    throw new Error(`Gemini API error ${resp.status}: ${errText}`)
-  }
-
-  const data = await resp.json()
-
-  // The output image is in interaction.output_image.data (base64)
-  const imgData = data?.output_image?.data
-  if (!imgData) {
-    // Try iterating steps for the image part
-    const steps = data?.steps || []
-    for (const step of steps) {
-      for (const part of step?.parts || []) {
-        if (part?.inline_data?.data) {
-          return `data:${part.inline_data.mime_type || 'image/png'};base64,${part.inline_data.data}`
+      if (styleMode !== 'comic-bw') {
+        ctx.fillStyle = variant ? 'rgba(255, 200, 216, .18)' : 'rgba(255, 235, 174, .16)'
+        ctx.fillRect(0, 0, width, height)
+        ctx.fillStyle = '#fffdf8'
+        for (let i = 0; i < 9; i += 1) {
+          const x = 45 + ((i * 149) % 640)
+          const y = 48 + ((i * 211) % 790)
+          ctx.font = `${variant ? 28 : 23}px serif`
+          ctx.fillText(i % 2 ? '✦' : '♡', x, y)
         }
       }
+      resolve(canvas.toDataURL('image/jpeg', .92))
     }
-    throw new Error('No image in Gemini API response')
-  }
-
-  return `data:image/png;base64,${imgData}` */
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   API KEY GATE
-   User enters their Gemini API key once — stored in localStorage.
-   Instructions link to aistudio.google.com/app/apikey
-───────────────────────────────────────────────────────────────────────────── */
-
-const LS_KEY = 'doodle_museum_gemini_key'
-
-function ApiKeyGate({ onKeySet }) {
-  const [keyInput, setKeyInput] = useState('')
-  const [error, setError] = useState('')
-
-  function handleSave() {
-    const k = keyInput.trim()
-    if (!k || k.length < 20) {
-      setError('Please paste a valid Gemini API key.')
-      return
-    }
-    localStorage.setItem(LS_KEY, k)
-    onKeySet(k)
-  }
-
-  return (
-    <div className="api-key-gate">
-      <div className="api-key-gate-icon">🔑</div>
-      <h3 className="api-key-gate-title">Enter Your Gemini API Key</h3>
-      <p className="api-key-gate-desc">
-        The cute anime transformation is powered by <strong>Gemini AI</strong> image generation.
-        You need a free API key to use it.
-      </p>
-      <ol className="api-key-gate-steps">
-        <li>Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer">aistudio.google.com/app/apikey</a></li>
-        <li>Click <strong>"Create API key"</strong> and copy it</li>
-        <li>Paste it below ↓</li>
-      </ol>
-      <div className="api-key-input-row">
-        <input
-          type="password"
-          placeholder="AIza..."
-          value={keyInput}
-          onChange={e => setKeyInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSave()}
-          className="api-key-input"
-          autoComplete="off"
-        />
-        <button type="button" className="api-key-save-btn" onClick={handleSave}>
-          Save &amp; Continue →
-        </button>
-      </div>
-      {error && <p className="api-key-error">{error}</p>}
-      <p className="api-key-privacy">Your key is stored only in your browser (localStorage). It never leaves your device except to call the Gemini API directly.</p>
-    </div>
-  )
+    image.onerror = () => reject(new Error('This image could not be opened. Please try another photo.'))
+    image.src = photoDataUrl
+  })
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -189,12 +61,11 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
   const streamRef = useRef(null)
   const uploadInputRef = useRef(null)
 
-  const apiKey = 'local-browser-comic'
   const [cameraActive, setCameraActive] = useState(false)
   const [startingCamera, setStartingCamera] = useState(false)
   const [cameraError, setCameraError] = useState(false)
   const [photoSnap, setPhotoSnap] = useState(null)         // original data-url
-  const [animeSnaps, setAnimeSnaps] = useState([])         // two Gemini-generated poses
+  const [animeSnaps, setAnimeSnaps] = useState([])         // two instant local photo-strip panels
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingMsg, setProcessingMsg] = useState('')
   const [apiError, setApiError] = useState('')
@@ -284,26 +155,24 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
     setAnimeSnaps([])
     setApiError('')
     setIsProcessing(true)
-    setProcessingMsg('✨ Creating two cute poses...')
+    setProcessingMsg('✨ Making your cute photo strip...')
 
     try {
-      setProcessingMsg('🎨 Drawing pose 1 of 2...')
-      const first = await callGeminiImageAPI(src, filterMode, apiKey, 'a cheerful front-facing portrait with a gentle smile')
-      setProcessingMsg('🎨 Drawing pose 2 of 2...')
-      const second = await callGeminiImageAPI(src, filterMode, apiKey, 'a playful three-quarter portrait, waving one hand')
+      const first = await makeCutePanel(src, filterMode, false)
+      const second = await makeCutePanel(src, filterMode, true)
       setAnimeSnaps([first, second])
     } catch (err) {
-      console.error('Gemini API error:', err)
-      setApiError(err.message || 'Something went wrong. Check your API key.')
+      console.error('Photo strip error:', err)
+      setApiError(err.message || 'Something went wrong while making your photo strip.')
     } finally {
       setIsProcessing(false)
       setProcessingMsg('')
     }
   }
 
-  // Re-generate when style changes (if photo already taken)
+  // Re-make the two local panels when the style changes.
   useEffect(() => {
-    if (photoSnap && apiKey) {
+    if (photoSnap) {
       processPhoto(photoSnap)
     }
   }, [filterMode])
@@ -314,8 +183,6 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
     setApiError('')
     if (!cameraActive) startCamera()
   }
-
-  function clearApiKey() {}
 
   // ── Download strip as PNG ──
   function downloadStrip() {
@@ -414,13 +281,12 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
             {/* Viewfinder */}
             <div className="camera-viewfinder-box">
               {animeSnaps[0] ? (
-                /* Generated anime image fills the viewfinder */
-                <img src={animeSnaps[0]} alt="First cute anime pose" className={`captured-photo-preview ${filterMode === 'comic-bw' ? 'bw-result' : ''}`} />
+                <img src={animeSnaps[0]} alt="First photo-strip panel" className="captured-photo-preview" />
               ) : isProcessing ? (
                 <div className="ai-processing-screen">
                   <div className="ai-processing-spinner">✨</div>
                   <p className="ai-processing-text">{processingMsg}</p>
-                  <p className="ai-processing-sub">No key or account needed ☁️</p>
+                  <p className="ai-processing-sub">Instant and private — no key or account needed ☁️</p>
                 </div>
               ) : photoSnap ? (
                 /* Show original while waiting for re-process */
@@ -452,18 +318,15 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
             {apiError && (
               <div className="api-error-banner">
                 ⚠️ {apiError}
-                {apiError.includes('403') || apiError.includes('key') ? (
-                  <button className="api-key-reset-link" onClick={clearApiKey}>Reset API key →</button>
-                ) : null}
               </div>
             )}
 
             {/* Style pills */}
             <div className="caricature-mode-pills">
               {[
-                { id: 'anime-color', emoji: '🌸', label: 'Cute Anime' },
-                { id: 'soft-sketch', emoji: '🖍️', label: 'Soft Sketch' },
-                { id: 'comic-bw',   emoji: '🖋️', label: 'Manga B&W' },
+                { id: 'anime-color', emoji: '🌸', label: 'Cute Photo' },
+                { id: 'soft-sketch', emoji: '🖍️', label: 'Soft Glow' },
+                { id: 'comic-bw',   emoji: '🖋️', label: 'True B&W' },
               ].map(s => (
                 <button
                   key={s.id}
@@ -512,7 +375,6 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
               </p>
             )}
 
-            {/* API key reset */}
           </div>
 
           {/* ── RIGHT: Preview Strip ── */}
@@ -524,31 +386,31 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                 <div className="strip-tag">LIVE PHOTO BOOTH</div>
               </div>
 
-              {/* Frame 1 — Anime illustration */}
+              {/* Frame 1 */}
               <div className="strip-frame">
               {animeSnaps[0] ? (
-                  <img src={animeSnaps[0]} alt="Cute anime pose one" className={`strip-img ${filterMode === 'comic-bw' ? 'bw-result' : ''}`} />
+                  <img src={animeSnaps[0]} alt="First photo-strip panel" className="strip-img" />
                 ) : isProcessing ? (
                   <div className="strip-frame-empty">
                     <span>✨</span>
-                    <p>AI generating...</p>
+                    <p>Making your strip...</p>
                   </div>
                 ) : (
                   <div className="strip-frame-empty">
                     <span>📸</span>
-                    <p>Cute pose one</p>
+                    <p>Your first photo</p>
                   </div>
                 )}
               </div>
 
-              {/* Frame 2 — second cute pose */}
+              {/* Frame 2 */}
               <div className="strip-frame">
                 {animeSnaps[1] ? (
-                  <img src={animeSnaps[1]} alt="Cute anime pose two" className={`strip-img ${filterMode === 'comic-bw' ? 'bw-result' : ''}`} />
+                  <img src={animeSnaps[1]} alt="Second photo-strip panel" className="strip-img" />
                 ) : (
                   <div className="strip-frame-empty">
                     <span>✨</span>
-                    <p>Cute pose two</p>
+                    <p>Your second photo</p>
                   </div>
                 )}
               </div>
