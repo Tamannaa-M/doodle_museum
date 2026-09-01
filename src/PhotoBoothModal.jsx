@@ -203,6 +203,15 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
   useEffect(() => () => stopCamera(), [])
 
+  useEffect(() => {
+    if (!cameraActive || !videoRef.current || !streamRef.current) return
+    videoRef.current.srcObject = streamRef.current
+    videoRef.current.play().catch((error) => {
+      console.error('Camera preview error:', error)
+      setCameraError(true)
+    })
+  }, [cameraActive])
+
   async function startCamera() {
     if (streamRef.current) return true
     setStartingCamera(true)
@@ -214,13 +223,8 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
         audio: false,
       })
       streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        await videoRef.current.play()
-        setCameraActive(true)
-        return true
-      }
-      return false
+      setCameraActive(true)
+      return true
     } catch (error) {
       console.error('Camera permission error:', error)
       setCameraActive(false)
