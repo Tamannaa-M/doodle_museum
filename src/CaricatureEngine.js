@@ -5,7 +5,7 @@
  * (matching the user's reference image: "Original ➔ Cute Anime Caricature").
  */
 
-export function generateCaricature(imageSource, style = 'anime-color') {
+export function generateCaricature(imageSource, style = 'anime-color',panel='') {
   return new Promise((resolve) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
@@ -22,7 +22,13 @@ export function generateCaricature(imageSource, style = 'anime-color') {
       const minDim = Math.min(img.width, img.height)
       const sx = (img.width - minDim) / 2
       const sy = (img.height - minDim) / 2
-      ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, width, height)
+      if (panel.includes('three-quarter')) {
+  ctx.translate(width, 0)
+  ctx.scale(-1, 1)
+}
+
+ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, width, height)
+ctx.setTransform(1, 0, 0, 1, 0, 0)
 
       const srcData = ctx.getImageData(0, 0, width, height)
       const src = srcData.data
