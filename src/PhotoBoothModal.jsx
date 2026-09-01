@@ -86,6 +86,7 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
   const [startingCamera, setStartingCamera] = useState(false)
   const [cameraError, setCameraError] = useState(false)
   const [photoSnap, setPhotoSnap] = useState(null)         // original data-url
+  const [secondPhotoSnap, setSecondPhotoSnap] = useState(null)
   const [animeSnaps, setAnimeSnaps] = useState([])         // two instant local photo-strip panels
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingMsg, setProcessingMsg] = useState('')
@@ -102,7 +103,7 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
       console.error('Camera preview error:', error)
       setCameraError(true)
     })
-  }, [cameraActive])
+  }, [cameraActive, photoSnap])
 
   async function startCamera() {
     if (streamRef.current) return true
@@ -172,16 +173,20 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
   }
 
   async function processPhoto(src) {
-    setPhotoSnap(src)
+    const firstPhoto = photoSnap || src
+    const secondPhoto = photoSnap ? src : null
+    if (!photoSnap) setPhotoSnap(src)
+    else setSecondPhotoSnap(src)
     setAnimeSnaps([])
     setApiError('')
     setIsProcessing(true)
     setProcessingMsg('✨ Making your cute photo strip...')
 
     try {
-      const first = await makeCutePanel(src, filterMode, false)
-      const second = await makeCutePanel(src, filterMode, true)
-      setAnimeSnaps([first, second])
+      const first = await makeCutePanel(firstPhoto, filterMode, false)
+      const panels = [first]
+      if (secondPhoto) panels.push(await makeCutePanel(secondPhoto, filterMode, false))
+      setAnimeSnaps(panels)
     } catch (err) {
       console.error('Photo strip error:', err)
       setApiError(err.message || 'Something went wrong while making your photo strip.')
@@ -194,12 +199,19 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
   // Re-make the two local panels when the style changes.
   useEffect(() => {
     if (photoSnap) {
-      processPhoto(photoSnap)
+      const refreshPanels = async () => {
+        const first = await makeCutePanel(photoSnap, filterMode, false)
+        const panels = [first]
+        if (secondPhotoSnap) panels.push(await makeCutePanel(secondPhotoSnap, filterMode, false))
+        setAnimeSnaps(panels)
+      }
+      refreshPanels().catch(err => setApiError(err.message || 'Could not refresh this style.'))
     }
   }, [filterMode])
 
   function resetPhoto() {
     setPhotoSnap(null)
+    setSecondPhotoSnap(null)
     setAnimeSnaps([])
     setApiError('')
     if (!cameraActive) startCamera()
@@ -254,14 +266,30 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
     function doFrame3() {
       drawFrame(y3)
+      if (doodle?.image_url) {
+        const art = new Image(); art.crossOrigin = 'anonymous'
+        art.onload = () => {
+          ctx.drawImage(art, fX + 4, y3 + 4, fW - 8, fH - 8)
+          finishStrip()
+        }
+        art.onerror = finishStrip
+        art.src = doodle.image_url
+        return
+      }
+      finishStrip()
+    }
+
+    function finishStrip() {
       ctx.fillStyle = '#181512'
       ctx.font = 'bold 20px Georgia, serif'
-      ctx.fillText(`"${doodle?.title?.split(' /// ')[0] || 'Masterpiece'}"`, W / 2, y3 + 66)
-      ctx.font = 'bold 18px cursive'
-      ctx.fillText(`by ${artistName || 'Museum Artist'}`, W / 2, y3 + 108)
-      ctx.font = '20px sans-serif'; ctx.fillText('♡  ♡  ♡', W / 2, y3 + 148)
-      ctx.font = '11px cursive'
-      ctx.fillText('✦ The Doodle Museum Collection ✦', W / 2, y3 + 188)
+      if (!doodle?.image_url) ctx.fillText(`"${doodle?.title?.split(' /// ')[0] || 'Masterpiece'}"`, W / 2, y3 + 66)
+      if (!doodle?.image_url) {
+        ctx.font = 'bold 18px cursive'
+        ctx.fillText(`by ${artistName || 'Museum Artist'}`, W / 2, y3 + 108)
+        ctx.font = '20px sans-serif'; ctx.fillText('♡  ♡  ♡', W / 2, y3 + 148)
+        ctx.font = '11px cursive'
+        ctx.fillText('✦ The Doodle Museum Collection ✦', W / 2, y3 + 188)
+      }
 
       ctx.font = 'bold 11px cursive'
       ctx.fillText('#doodlemuseum  •  insert memories ✦', W / 2, 900)
@@ -302,7 +330,10 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
             {/* Viewfinder */}
             <div className="camera-viewfinder-box">
               {animeSnaps[0] ? (
-                <img src={animeSnaps[0]} alt="First photo-strip panel" className="captured-photo-preview" />
+                <>
+                  {cameraActive && <video ref={videoRef} autoPlay playsInline muted style={{ display: 'none' }} />}
+                  <img src={animeSnaps[0]} alt="First photo-strip panel" className="captured-photo-preview" />
+                </>
               ) : isProcessing ? (
                 <div className="ai-processing-screen">
                   <div className="ai-processing-spinner">✨</div>
@@ -355,9 +386,13 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
             {/* Action buttons — Snapshot (camera) + Upload (separate) */}
             <div className="camera-action-toolbar">
-              {animeSnaps.length > 0 || photoSnap ? (
+              {secondPhotoSnap ? (
                 <button type="button" className="booth-btn secondary" onClick={resetPhoto}>
                   🔄 Try Again
+                </button>
+              ) : photoSnap ? (
+                <button type="button" className="booth-btn primary" onClick={triggerSnapshot}>
+                  📸 Take Second Pose
                 </button>
               ) : (
                 <button
@@ -424,21 +459,21 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                 ) : (
                   <div className="strip-frame-empty">
                     <span>✨</span>
-                    <p>Your second photo</p>
+                    <p>Change pose, then take photo 2</p>
                   </div>
                 )}
               </div>
 
-              {/* Frame 3 — Avatar signature */}
+              {/* Frame 3 — artwork */}
               <div className="strip-frame strip-avatar-frame">
-                <div className="strip-avatar-display">
-                  <RenderAvatar avatar={avatar} size={60} />
-                </div>
-                <div className="strip-artist-signature">
+                {doodle?.image_url ? <img src={doodle.image_url} alt="Your artwork" className="strip-img strip-artwork-img" /> : (
+                  <div className="strip-avatar-display"><RenderAvatar avatar={avatar} size={60} /></div>
+                )}
+                {!doodle?.image_url && <div className="strip-artist-signature">
                   <span className="by-line">Artist</span>
                   <span className="name-line">{artistName || 'Anonymous'}</span>
                   <span className="hearts-line">♡ ♡ ♡</span>
-                </div>
+                </div>}
               </div>
 
               <div className="strip-footer">
