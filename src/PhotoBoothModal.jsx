@@ -1,6 +1,31 @@
 import { useEffect, useRef, useState } from 'react'
 import { RenderAvatar } from './AvatarLibrary'
-import { generateCaricature } from './CaricatureEngine'
+
+const ILLUSTRATOR_WORKER_URL = 'https://doodle-illustrator.tamannaamanchikanti.workers.dev/'
+
+async function makeIllustration(photoDataUrl) {
+  const response = await fetch(ILLUSTRATOR_WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image: photoDataUrl }),
+  })
+
+  if (!response.ok) {
+    const details = await response.text()
+    try { throw new Error(JSON.parse(details).error) } catch (error) {
+      if (error instanceof SyntaxError) throw new Error('The illustration service could not draw this photo yet.')
+      throw error
+    }
+  }
+
+  const blob = await response.blob()
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('Could not read the illustration.'))
+    reader.onload = () => resolve(reader.result)
+    reader.readAsDataURL(blob)
+  })
+}
 
 /* Instant local photo-strip panels. Nothing is uploaded and no account, key,
    server function, or AI quota is required. */
@@ -179,7 +204,7 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
     setIsProcessing(true)
     setProcessingMsg('✏️ Drawing your doodle portrait...')
     try {
-      const illustration = await generateCaricature(src, 'clean-line')
+      const illustration = await makeIllustration(src)
       setAnimeSnaps([illustration])
     } catch (err) {
       setApiError('Could not draw this photo. Please try another one.')
