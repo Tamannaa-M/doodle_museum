@@ -19,30 +19,64 @@ function makeCutePanel(photoDataUrl, styleMode, variant) {
       const offsetX = (width - drawWidth) / 2 + (variant ? Math.min(42, drawWidth * 0.04) : -Math.min(18, drawWidth * 0.02))
       const offsetY = (height - drawHeight) / 2
 
-      ctx.fillStyle = '#fffaf3'
-      ctx.fillRect(0, 0, width, height)
-      if (styleMode === 'comic-bw') ctx.filter = 'grayscale(1) contrast(1.12) brightness(1.16)'
-      else if (styleMode === 'soft-sketch') ctx.filter = 'saturate(.72) brightness(1.12) contrast(.92) sepia(.09)'
-      else ctx.filter = 'saturate(.88) brightness(1.08) contrast(.96)'
+      const drawCover = (mirror = false) => {
+        if (mirror) {
+          ctx.save()
+          ctx.translate(width, 0)
+          ctx.scale(-1, 1)
+          ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight)
+          ctx.restore()
+        } else ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight)
+      }
 
-      if (variant) {
-        ctx.save()
-        ctx.translate(width, 0)
-        ctx.scale(-1, 1)
-        ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight)
-        ctx.restore()
-      } else ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight)
-      ctx.filter = 'none'
-
-      if (styleMode !== 'comic-bw') {
-        ctx.fillStyle = variant ? 'rgba(255, 200, 216, .18)' : 'rgba(255, 235, 174, .16)'
+      if (styleMode === 'soft-sketch') {
+        // A deliberately different look: blurred pastel backdrop + a crisp little print.
+        ctx.fillStyle = '#e9def3'
         ctx.fillRect(0, 0, width, height)
-        ctx.fillStyle = '#fffdf8'
-        for (let i = 0; i < 9; i += 1) {
-          const x = 45 + ((i * 149) % 640)
-          const y = 48 + ((i * 211) % 790)
-          ctx.font = `${variant ? 28 : 23}px serif`
-          ctx.fillText(i % 2 ? '✦' : '♡', x, y)
+        ctx.filter = 'blur(22px) saturate(.7) brightness(1.06)'
+        drawCover(variant)
+        ctx.filter = 'none'
+        const fade = ctx.createLinearGradient(0, 0, width, height)
+        fade.addColorStop(0, 'rgba(255, 209, 224, .42)')
+        fade.addColorStop(1, 'rgba(202, 222, 255, .42)')
+        ctx.fillStyle = fade
+        ctx.fillRect(0, 0, width, height)
+
+        const pad = 48
+        ctx.save()
+        ctx.beginPath()
+        ctx.roundRect(pad, pad, width - pad * 2, height - pad * 2, 28)
+        ctx.clip()
+        ctx.filter = 'saturate(.95) brightness(1.08) contrast(.98)'
+        if (variant) {
+          ctx.translate(width, 0)
+          ctx.scale(-1, 1)
+          ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight)
+        } else ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight)
+        ctx.restore()
+        ctx.filter = 'none'
+        ctx.strokeStyle = '#fffaf5'
+        ctx.lineWidth = 13
+        ctx.beginPath()
+        ctx.roundRect(pad, pad, width - pad * 2, height - pad * 2, 28)
+        ctx.stroke()
+      } else {
+        ctx.fillStyle = '#fffaf3'
+        ctx.fillRect(0, 0, width, height)
+        ctx.filter = styleMode === 'comic-bw'
+          ? 'grayscale(1) contrast(1.18) brightness(1.13)'
+          : 'saturate(1.18) brightness(1.05) contrast(1.04)'
+        drawCover(variant)
+        ctx.filter = 'none'
+
+        if (styleMode === 'anime-color') {
+          ctx.strokeStyle = '#fff7ed'
+          ctx.lineWidth = 12
+          ctx.strokeRect(10, 10, width - 20, height - 20)
+          ctx.fillStyle = '#fffaf3'
+          ctx.font = '27px serif'
+          ctx.fillText('♡', 42, 64)
+          ctx.fillText('✦', width - 68, height - 38)
         }
       }
       resolve(canvas.toDataURL('image/jpeg', .92))
