@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     'soft-sketch': 'cute pastel pencil-and-watercolour illustration; gentle features, soft colours, friendly mood',
     'comic-bw': 'cute black-and-white manga line-art; friendly expression, clean ink, no colour',
   }
-  const prompt = `Create one safe, cute, friendly ${styles[style] || styles['anime-color']} from this photo. Keep the person recognisable. Pose: ${pose}. Never horror, creepy, distorted, grotesque, or scary. No text, no border.`
+  const prompt = `Create one polished, bright, joyful ${styles[style] || styles['anime-color']} from this photo. Keep every person recognisable and flattering. Use smooth clean linework, soft lighting, warm friendly expressions, normal facial proportions, and a light background. Pose: ${pose}. Absolutely do not use dark ink-heavy shadows, distorted faces, hollow eyes, horror, creepiness, grotesque details, or unsettling imagery. No text and no border.`
 
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${key}`, {
     method: 'POST',

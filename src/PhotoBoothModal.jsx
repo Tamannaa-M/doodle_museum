@@ -200,7 +200,7 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
   const [timerCount, setTimerCount] = useState(null)
   const [filterMode, setFilterMode] = useState('anime-color')
 
-  useEffect(() => { startCamera(); return () => stopCamera() }, [])
+  useEffect(() => () => stopCamera(), [])
 
   async function startCamera() {
     try {
@@ -228,7 +228,8 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
   function triggerSnapshot() {
     if (!cameraActive) {
-      setCameraError(true)
+      setCameraError(false)
+      startCamera()
       return
     }
     let c = 3
@@ -474,9 +475,9 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                   className="booth-btn primary"
                   onClick={triggerSnapshot}
                   disabled={!cameraActive}
-                  title={cameraActive ? 'Take a selfie with countdown' : 'Camera permission is needed to take a photo'}
+                  title={cameraActive ? 'Take a selfie with countdown' : 'Open camera'}
                 >
-                📸 Take Photo
+                📸 {cameraActive ? 'Take Photo' : 'Open Camera'}
                 </button>
               )}
 

@@ -13,10 +13,10 @@ export function AvatarStudioModal({
     localStorage.getItem('doodle_artist_name') || ''
   )
   const [selectedAvatar, setSelectedAvatar] = useState('avatar-pigtails')
-  const [avatarMode, setAvatarMode] = useState('draw') // 'draw' | 'preset'
+  const [avatarMode, setAvatarMode] = useState('preset') // 'draw' | 'preset'
 
   // Hairstyle template selection
-  const [selectedHair, setSelectedHair] = useState('hair-pigtails-bows')
+  const [selectedHair, setSelectedHair] = useState('hair-blank-face')
 
   // Mini Avatar Draw Canvas State
   const avatarCanvasRef = useRef(null)
@@ -232,40 +232,20 @@ export function AvatarStudioModal({
             className={`tab-pill-btn ${avatarMode === 'draw' ? 'active' : ''}`}
             onClick={() => setAvatarMode('draw')}
           >
-            ✏️ Draw Your Face (With Hair Options)
+            ✏️ Draw Who Made This Masterpiece
           </button>
           <button
             className={`tab-pill-btn ${avatarMode === 'preset' ? 'active' : ''}`}
             onClick={() => setAvatarMode('preset')}
           >
-            🎨 Ready-Made Caricatures
+            ✨ Ready-Made Avatars
           </button>
         </div>
 
         {/* Tab 1: Draw Your Face with Hair Options & Full Drawing Tools */}
         {avatarMode === 'draw' && (
           <div className="draw-avatar-pad-wrapper">
-            <div className="board-banner-label">1. CHOOSE YOUR HAIRSTYLE BASE:</div>
-            
-            {/* Hairstyle Selector Pills (From Reference Image 2) */}
-            <div className="hair-options-carousel">
-              {HAIRSTYLE_TEMPLATES.map((hair) => (
-                <button
-                  key={hair.id}
-                  type="button"
-                  className={`hair-template-btn ${selectedHair === hair.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedHair(hair.id)}
-                  title={hair.name}
-                >
-                  <span className={`hair-btn-icon ${hair.id}`} aria-hidden="true" />
-                  <span className="hair-btn-label">{hair.name}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="board-banner-label" style={{ marginTop: '14px' }}>
-              2. DRAW YOUR EYES, SMILE & ACCESSORIES:
-            </div>
+            <div className="board-banner-label">DRAW YOUR FACE, HAIR, SMILE & ACCESSORIES:</div>
 
             <div className="avatar-canvas-assembly">
               {/* Circular Avatar Drawing Canvas */}
