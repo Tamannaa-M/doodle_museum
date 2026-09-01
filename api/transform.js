@@ -14,16 +14,20 @@ export default async function handler(req, res) {
   }
   const prompt = `Create one polished, bright, joyful ${styles[style] || styles['anime-color']} from this photo. Keep every person recognisable and flattering. Use smooth clean linework, soft lighting, warm friendly expressions, normal facial proportions, and a light background. Pose: ${pose}. Absolutely do not use dark ink-heavy shadows, distorted faces, hollow eyes, horror, creepiness, grotesque details, or unsettling imagery. No text and no border.`
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${key}`, {
+  const response = await fetch('https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-image:generateContent', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: image } }] }],
-      generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+      generationConfig: { responseModalities: ['IMAGE'] },
     }),
   })
 
-  if (!response.ok) return res.status(response.status).json({ error: 'The illustration service is temporarily busy. Please try again shortly.' })
+  if (!response.ok) {
+    const details = await response.text()
+    console.error('Gemini image request failed:', response.status, details)
+    return res.status(response.status).json({ error: 'The illustration service is temporarily busy. Please try again shortly.' })
+  }
   const data = await response.json()
   const part = data?.candidates?.[0]?.content?.parts?.find((item) => item.inlineData?.data)
   if (!part) return res.status(502).json({ error: 'The illustration service did not return an image.' })
