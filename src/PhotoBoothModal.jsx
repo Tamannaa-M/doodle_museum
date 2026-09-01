@@ -175,30 +175,7 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
     setPhotoSnap(src)
     setAnimeSnaps([])
     setApiError('')
-    setIsProcessing(true)
-    setProcessingMsg('✨ Making your cute photo strip...')
-
-    try {
-      setAnimeSnaps([await makeCutePanel(src, filterMode, false)])
-    } catch (err) {
-      console.error('Photo strip error:', err)
-      setApiError(err.message || 'Something went wrong while making your photo strip.')
-    } finally {
-      setIsProcessing(false)
-      setProcessingMsg('')
-    }
   }
-
-  // Re-make the two local panels when the style changes.
-  useEffect(() => {
-    if (photoSnap) {
-      const refreshPanels = async () => {
-        const first = await makeCutePanel(photoSnap, filterMode, false)
-        setAnimeSnaps([first])
-      }
-      refreshPanels().catch(err => setApiError(err.message || 'Could not refresh this style.'))
-    }
-  }, [filterMode])
 
   function resetPhoto() {
     setPhotoSnap(null)
@@ -238,10 +215,10 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
     const loadAll = () => {
       drawFrame(y1)
-      if (animeSnaps[0]) {
+      if (photoSnap) {
         const i1 = new Image(); i1.crossOrigin = 'anonymous'
         i1.onload = () => { ctx.drawImage(i1, fX + 3, y1 + 3, fW - 6, fH - 6); doFrame2() }
-        i1.src = animeSnaps[0]
+        i1.src = photoSnap
       } else doFrame2()
     }
 
@@ -308,19 +285,7 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
             {/* Viewfinder */}
             <div className="camera-viewfinder-box">
-              {animeSnaps[0] ? (
-                <>
-                  {cameraActive && <video ref={videoRef} autoPlay playsInline muted style={{ display: 'none' }} />}
-                  <img src={animeSnaps[0]} alt="First photo-strip panel" className="captured-photo-preview" />
-                </>
-              ) : isProcessing ? (
-                <div className="ai-processing-screen">
-                  <div className="ai-processing-spinner">✨</div>
-                  <p className="ai-processing-text">{processingMsg}</p>
-                  <p className="ai-processing-sub">Instant and private — no key or account needed ☁️</p>
-                </div>
-              ) : photoSnap ? (
-                /* Show original while waiting for re-process */
+              {photoSnap ? (
                 <img src={photoSnap} alt="Your photo" className="captured-photo-preview" style={{ opacity: 0.7 }} />
               ) : cameraActive ? (
                 <video ref={videoRef} autoPlay playsInline muted className="live-camera-video" />
@@ -344,23 +309,6 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                 ⚠️ {apiError}
               </div>
             )}
-
-            {/* Style pills */}
-            <div className="caricature-mode-pills">
-              {[
-                { id: 'anime-color', emoji: '🌸', label: 'Cute Photo' },
-                { id: 'comic-bw',   emoji: '🖋️', label: 'True B&W' },
-              ].map(s => (
-                <button
-                  key={s.id}
-                  type="button"
-                  className={`caricature-pill-btn ${filterMode === s.id ? 'active' : ''}`}
-                  onClick={() => setFilterMode(s.id)}
-                >
-                  {s.emoji} {s.label}
-                </button>
-              ))}
-            </div>
 
             {/* Action buttons — Snapshot (camera) + Upload (separate) */}
             <div className="camera-action-toolbar">
@@ -409,21 +357,10 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                 <div className="strip-tag">LIVE PHOTO BOOTH</div>
               </div>
 
-              {/* Frame 1 */}
-              <div className="strip-frame">
-              {animeSnaps[0] ? (
-                  <img src={animeSnaps[0]} alt="First photo-strip panel" className="strip-img" />
-                ) : isProcessing ? (
-                  <div className="strip-frame-empty">
-                    <span>✨</span>
-                    <p>Making your strip...</p>
-                  </div>
-                ) : (
-                  <div className="strip-frame-empty">
-                    <span>📸</span>
-                    <p>Your first photo</p>
-                  </div>
-                )}
+              {/* Frame 1 — illustrated avatar */}
+              <div className="strip-frame strip-avatar-frame">
+                <div className="strip-avatar-display"><RenderAvatar avatar={avatar} size={105} /></div>
+                <div className="strip-artist-signature"><span className="by-line">doodle portrait</span><span className="name-line">{artistName || 'Artist'}</span></div>
               </div>
 
               {/* Frame 2 — your artwork */}
@@ -438,14 +375,9 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                 )}
               </div>
 
-              {/* Frame 3 — avatar */}
+              {/* Frame 3 — optional memory photo */}
               <div className="strip-frame strip-avatar-frame">
-                <div className="strip-avatar-display"><RenderAvatar avatar={avatar} size={60} /></div>
-                <div className="strip-artist-signature">
-                  <span className="by-line">Artist</span>
-                  <span className="name-line">{artistName || 'Anonymous'}</span>
-                  <span className="hearts-line">♡ ♡ ♡</span>
-                </div>
+                {photoSnap ? <img src={photoSnap} alt="Your memory photo" className="strip-img" /> : <div className="strip-frame-empty"><span>📸</span><p>Optional memory photo</p></div>}
               </div>
 
               <div className="strip-footer">
@@ -460,8 +392,8 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
               type="button"
               className="download-strip-btn"
               onClick={downloadStrip}
-              disabled={animeSnaps.length !== 1}
-              title={animeSnaps.length === 1 ? 'Download your photo strip!' : 'Take a photo first'}
+              disabled={!photoSnap}
+              title={photoSnap ? 'Download your photo strip!' : 'Take a photo first'}
             >
               📥 Download Photostrip (.PNG)
             </button>
