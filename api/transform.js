@@ -26,7 +26,9 @@ export default async function handler(req, res) {
   if (!response.ok) {
     const details = await response.text()
     console.error('Gemini image request failed:', response.status, details)
-    return res.status(response.status).json({ error: 'The illustration service is temporarily busy. Please try again shortly.' })
+    let message = 'The illustration service is temporarily busy. Please try again shortly.'
+    try { message = JSON.parse(details)?.error?.message || message } catch {}
+    return res.status(response.status).json({ error: message })
   }
   const data = await response.json()
   const part = data?.candidates?.[0]?.content?.parts?.find((item) => item.inlineData?.data)
