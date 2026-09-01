@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { RenderAvatar } from './AvatarLibrary'
+import { generateCaricature } from './CaricatureEngine'
 
 /* Instant local photo-strip panels. Nothing is uploaded and no account, key,
    server function, or AI quota is required. */
@@ -175,6 +176,17 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
     setPhotoSnap(src)
     setAnimeSnaps([])
     setApiError('')
+    setIsProcessing(true)
+    setProcessingMsg('✏️ Drawing your doodle portrait...')
+    try {
+      const illustration = await generateCaricature(src, 'clean-line')
+      setAnimeSnaps([illustration])
+    } catch (err) {
+      setApiError('Could not draw this photo. Please try another one.')
+    } finally {
+      setIsProcessing(false)
+      setProcessingMsg('')
+    }
   }
 
   function resetPhoto() {
@@ -215,10 +227,10 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
     const loadAll = () => {
       drawFrame(y1)
-      if (photoSnap) {
+      if (animeSnaps[0]) {
         const i1 = new Image(); i1.crossOrigin = 'anonymous'
         i1.onload = () => { ctx.drawImage(i1, fX + 3, y1 + 3, fW - 6, fH - 6); doFrame2() }
-        i1.src = photoSnap
+        i1.src = animeSnaps[0]
       } else doFrame2()
     }
 
@@ -285,7 +297,11 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
             {/* Viewfinder */}
             <div className="camera-viewfinder-box">
-              {photoSnap ? (
+              {animeSnaps[0] ? (
+                <img src={animeSnaps[0]} alt="Your doodle portrait" className="captured-photo-preview" />
+              ) : isProcessing ? (
+                <div className="ai-processing-screen"><div className="ai-processing-spinner">✏️</div><p className="ai-processing-text">{processingMsg}</p><p className="ai-processing-sub">Made in your browser — no key needed</p></div>
+              ) : photoSnap ? (
                 <img src={photoSnap} alt="Your photo" className="captured-photo-preview" style={{ opacity: 0.7 }} />
               ) : cameraActive ? (
                 <video ref={videoRef} autoPlay playsInline muted className="live-camera-video" />
@@ -357,10 +373,9 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                 <div className="strip-tag">LIVE PHOTO BOOTH</div>
               </div>
 
-              {/* Frame 1 — illustrated avatar */}
+              {/* Frame 1 — illustrated doodle portrait */}
               <div className="strip-frame strip-avatar-frame">
-                <div className="strip-avatar-display"><RenderAvatar avatar={avatar} size={105} /></div>
-                <div className="strip-artist-signature"><span className="by-line">doodle portrait</span><span className="name-line">{artistName || 'Artist'}</span></div>
+                {animeSnaps[0] ? <img src={animeSnaps[0]} alt="Your doodle portrait" className="strip-img" /> : <div className="strip-frame-empty"><span>✏️</span><p>Your doodle portrait</p></div>}
               </div>
 
               {/* Frame 2 — your artwork */}
@@ -375,9 +390,10 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                 )}
               </div>
 
-              {/* Frame 3 — optional memory photo */}
+              {/* Frame 3 — avatar */}
               <div className="strip-frame strip-avatar-frame">
-                {photoSnap ? <img src={photoSnap} alt="Your memory photo" className="strip-img" /> : <div className="strip-frame-empty"><span>📸</span><p>Optional memory photo</p></div>}
+                <div className="strip-avatar-display"><RenderAvatar avatar={avatar} size={60} /></div>
+                <div className="strip-artist-signature"><span className="by-line">Artist</span><span className="name-line">{artistName || 'Artist'}</span><span className="hearts-line">♡ ♡ ♡</span></div>
               </div>
 
               <div className="strip-footer">
@@ -392,8 +408,8 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
               type="button"
               className="download-strip-btn"
               onClick={downloadStrip}
-              disabled={!photoSnap}
-              title={photoSnap ? 'Download your photo strip!' : 'Take a photo first'}
+              disabled={!animeSnaps[0]}
+              title={animeSnaps[0] ? 'Download your photo strip!' : 'Take a photo first'}
             >
               📥 Download Photostrip (.PNG)
             </button>
