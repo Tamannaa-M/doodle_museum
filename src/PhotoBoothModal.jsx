@@ -13,71 +13,58 @@ function makeCutePanel(photoDataUrl, styleMode, variant) {
       canvas.width = width
       canvas.height = height
       const ctx = canvas.getContext('2d')
-      const ratio = Math.max(width / image.width, height / image.height)
-      const drawWidth = image.width * ratio
-      const drawHeight = image.height * ratio
-      const offsetX = (width - drawWidth) / 2 + (variant ? Math.min(42, drawWidth * 0.04) : -Math.min(18, drawWidth * 0.02))
-      const offsetY = (height - drawHeight) / 2
-
-      const drawCover = (mirror = false) => {
+      const drawPhoto = (x, y, w, h, mirror, filter) => {
+        const ratio = Math.max(w / image.width, h / image.height)
+        const photoW = image.width * ratio
+        const photoH = image.height * ratio
+        ctx.save()
+        ctx.beginPath()
+        ctx.roundRect(x, y, w, h, 24)
+        ctx.clip()
+        ctx.filter = filter
         if (mirror) {
-          ctx.save()
-          ctx.translate(width, 0)
+          ctx.translate(x + w, y)
           ctx.scale(-1, 1)
-          ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight)
-          ctx.restore()
-        } else ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight)
+          ctx.drawImage(image, (w - photoW) / 2, (h - photoH) / 2, photoW, photoH)
+        } else ctx.drawImage(image, x + (w - photoW) / 2, y + (h - photoH) / 2, photoW, photoH)
+        ctx.restore()
+        ctx.filter = 'none'
+      }
+      const outlinedCard = (x, y, w, h, ink, paper) => {
+        ctx.fillStyle = paper
+        ctx.beginPath(); ctx.roundRect(x, y, w, h, 28); ctx.fill()
+        ctx.strokeStyle = ink; ctx.lineWidth = 7
+        ctx.beginPath(); ctx.roundRect(x, y, w, h, 28); ctx.stroke()
       }
 
       if (styleMode === 'soft-sketch') {
-        // A deliberately different look: blurred pastel backdrop + a crisp little print.
-        ctx.fillStyle = '#e9def3'
-        ctx.fillRect(0, 0, width, height)
-        ctx.filter = 'blur(22px) saturate(.7) brightness(1.06)'
-        drawCover(variant)
-        ctx.filter = 'none'
-        const fade = ctx.createLinearGradient(0, 0, width, height)
-        fade.addColorStop(0, 'rgba(255, 209, 224, .42)')
-        fade.addColorStop(1, 'rgba(202, 222, 255, .42)')
-        ctx.fillStyle = fade
-        ctx.fillRect(0, 0, width, height)
-
-        const pad = 48
-        ctx.save()
-        ctx.beginPath()
-        ctx.roundRect(pad, pad, width - pad * 2, height - pad * 2, 28)
-        ctx.clip()
-        ctx.filter = 'saturate(.95) brightness(1.08) contrast(.98)'
-        if (variant) {
-          ctx.translate(width, 0)
-          ctx.scale(-1, 1)
-          ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight)
-        } else ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight)
-        ctx.restore()
-        ctx.filter = 'none'
-        ctx.strokeStyle = '#fffaf5'
-        ctx.lineWidth = 13
-        ctx.beginPath()
-        ctx.roundRect(pad, pad, width - pad * 2, height - pad * 2, 28)
-        ctx.stroke()
+        // A bright pastel stationery card, deliberately unlike the warm photo mode.
+        const wash = ctx.createLinearGradient(0, 0, width, height)
+        wash.addColorStop(0, '#cfeaff'); wash.addColorStop(.5, '#f4d9ec'); wash.addColorStop(1, '#fff0c8')
+        ctx.fillStyle = wash; ctx.fillRect(0, 0, width, height)
+        ctx.fillStyle = 'rgba(255,255,255,.5)'
+        for (let i = 0; i < 18; i += 1) ctx.beginPath(), ctx.arc(35 + (i * 101) % 670, 38 + (i * 137) % 820, 8 + (i % 3) * 6, 0, Math.PI * 2), ctx.fill()
+        outlinedCard(54, 102, 612, 692, '#71647a', '#fffdf9')
+        drawPhoto(72, 120, 576, 630, variant, 'saturate(1.04) brightness(1.09) contrast(.96)')
+        ctx.fillStyle = '#71647a'; ctx.textAlign = 'center'; ctx.font = 'italic 29px Georgia, serif'
+        ctx.fillText('little memory', width / 2, 850)
+      } else if (styleMode === 'comic-bw') {
+        ctx.fillStyle = '#fffdf8'; ctx.fillRect(0, 0, width, height)
+        ctx.fillStyle = '#dedbd4'
+        for (let y = 32; y < height; y += 26) for (let x = 32; x < width; x += 26) ctx.fillRect(x, y, 4, 4)
+        outlinedCard(46, 92, 628, 710, '#202020', '#fff')
+        drawPhoto(64, 110, 592, 656, variant, 'grayscale(1) contrast(1.08) brightness(1.18)')
+        ctx.fillStyle = '#202020'; ctx.textAlign = 'center'; ctx.font = 'bold 25px Georgia, serif'
+        ctx.fillText('DOODLE DAY', width / 2, 850)
       } else {
-        ctx.fillStyle = '#fffaf3'
-        ctx.fillRect(0, 0, width, height)
-        ctx.filter = styleMode === 'comic-bw'
-          ? 'grayscale(1) contrast(1.18) brightness(1.13)'
-          : 'saturate(1.18) brightness(1.05) contrast(1.04)'
-        drawCover(variant)
-        ctx.filter = 'none'
-
-        if (styleMode === 'anime-color') {
-          ctx.strokeStyle = '#fff7ed'
-          ctx.lineWidth = 12
-          ctx.strokeRect(10, 10, width - 20, height - 20)
-          ctx.fillStyle = '#fffaf3'
-          ctx.font = '27px serif'
-          ctx.fillText('♡', 42, 64)
-          ctx.fillText('✦', width - 68, height - 38)
-        }
+        // Crisp warm photo in a cute hand-drawn card — no foggy overlay.
+        ctx.fillStyle = '#ffd9e4'; ctx.fillRect(0, 0, width, height)
+        ctx.fillStyle = '#f8b8ca'
+        for (let y = 35; y < height; y += 46) for (let x = 28; x < width; x += 46) ctx.fillRect(x, y, 5, 5)
+        outlinedCard(46, 92, 628, 710, '#5b4148', '#fffaf5')
+        drawPhoto(64, 110, 592, 656, variant, 'saturate(1.16) brightness(1.07) contrast(1.03)')
+        ctx.fillStyle = '#5b4148'; ctx.textAlign = 'center'; ctx.font = 'italic 29px Georgia, serif'
+        ctx.fillText('doodle day ♡', width / 2, 850)
       }
       resolve(canvas.toDataURL('image/jpeg', .92))
     }
@@ -339,13 +326,6 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                 <div className="camera-countdown-overlay">{timerCount}</div>
               )}
 
-              {/* Original photo pip when anime result is shown */}
-              {photoSnap && animeSnaps.length > 0 && (
-                <div className="original-thumb-pip">
-                  <img src={photoSnap} alt="Original" />
-                  <span>Original</span>
-                </div>
-              )}
             </div>
 
             {/* Error message */}
