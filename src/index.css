@@ -1,0 +1,2172 @@
+/* ==========================================================================
+   THE DOODLE MUSEUM • BLACK & WHITE SKETCHBOOK & MUSEUM WALL DESIGN
+   ========================================================================== */
+
+:root {
+  --wall-bg: #faf7f2;
+  --wall-plaster: #f2eee6;
+  --wall-shadow: rgba(22, 22, 22, 0.08);
+  
+  --ink-black: #161616;
+  --ink-dark: #242220;
+  --ink-medium: #544f48;
+  --ink-light: #8e877e;
+  
+  --accent-gold: #cfa858;
+  --accent-gold-dark: #8c6e33;
+  --accent-gold-light: #fae4a5;
+  
+  --paper-pure: #ffffff;
+  --paper-cream: #fbf9f4;
+  --paper-card: #f6f1e7;
+  
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-doodle: 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+  
+  color-scheme: light;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--wall-bg);
+  color: var(--ink-black);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: block;
+}
+
+/* ==========================================================================
+   DARK & PROMINENT DOODLE WALL BACKGROUND (Matching Notebook Sketch)
+   ========================================================================== */
+
+.museum-wall-bg {
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--wall-bg);
+  background-image: 
+    radial-gradient(circle at 50% 15%, rgba(255,255,255,0.85) 0%, rgba(250,247,242,0.4) 60%, rgba(235,228,218,0.75) 100%),
+    url('/doodle-wall-pattern.svg');
+  background-size: 850px 850px;
+  background-repeat: repeat;
+  background-attachment: fixed;
+  display: flex;
+  position: relative;
+}
+
+.museum-app-container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* ==========================================================================
+   DESKTOP STUDIO TOOLBAR (Vertical Studio Rail > 1024px)
+   ========================================================================== */
+
+.desktop-toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 96px;
+  min-width: 96px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  background: #181715;
+  background-image: linear-gradient(180deg, #24221f 0%, #151412 100%);
+  border-right: 2px solid #38342e;
+  box-shadow: 4px 0 25px rgba(0, 0, 0, 0.25);
+  padding: 24px 10px;
+  gap: 12px;
+  z-index: 100;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.desktop-toolbar::-webkit-scrollbar {
+  width: 4px;
+}
+.desktop-toolbar::-webkit-scrollbar-thumb {
+  background: #4a4237;
+  border-radius: 4px;
+}
+
+.toolbar-crest {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #e2be75 0%, #a67c33 100%);
+  border: 2px solid #ffd978;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+  cursor: default;
+  margin-bottom: 2px;
+  transition: transform 0.2s ease;
+}
+.toolbar-crest:hover {
+  transform: rotate(12deg) scale(1.05);
+}
+
+.toolbar-section-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #cbbfae;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  text-align: center;
+}
+
+.tool-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  background: #2a2723;
+  border: 1px solid #484136;
+  color: #f0e6d6;
+  font-size: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+  position: relative;
+}
+
+.tool-btn:hover {
+  background: #3c352c;
+  border-color: #7b6951;
+  transform: translateY(-2px);
+  color: #ffffff;
+}
+
+.tool-btn.active {
+  background: linear-gradient(135deg, #4f4232 0%, #382d1f 100%);
+  border: 2px solid #d4af37;
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+  transform: scale(1.04);
+}
+
+.tool-btn-caption {
+  font-size: 8px;
+  letter-spacing: 1px;
+  margin-top: 2px;
+  font-weight: 600;
+  color: #bfb29e;
+}
+
+.toolbar-divider {
+  width: 48px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #564736, transparent);
+  margin: 4px 0;
+}
+
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 22px);
+  gap: 8px;
+  justify-content: center;
+  margin: 4px 0;
+}
+
+.color-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #1a1714;
+  outline: 1px solid #4e4031;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.color-swatch:hover {
+  transform: scale(1.2);
+  outline-color: #ffd978;
+}
+
+.color-swatch.selected {
+  outline: 2px solid #ffd978;
+  box-shadow: 0 0 8px #d4af37;
+  transform: scale(1.25);
+}
+
+.custom-picker-wrapper {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #5a4b39;
+  background: #2b251f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.custom-picker-wrapper:hover {
+  transform: scale(1.1);
+  border-color: #d4af37;
+}
+
+.hidden-color-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.brush-size-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.brush-slider {
+  width: 68px;
+  height: 18px;
+  accent-color: #d4af37;
+  cursor: pointer;
+}
+
+.brush-indicator {
+  font-size: 10px;
+  color: #d8cdba;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   MOBILE & TABLET FLOATING BOTTOM STUDIO DOCK
+   ========================================================================== */
+
+.mobile-bottom-dock {
+  display: none; /* Shown via media queries on mobile/tablet */
+}
+
+@media (max-width: 1024px) {
+  .desktop-toolbar {
+    display: none; /* Hide vertical desktop rail */
+  }
+
+  .mobile-bottom-dock {
+    display: flex;
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 24px);
+    max-width: 580px;
+    background: rgba(26, 24, 21, 0.94);
+    backdrop-filter: blur(16px);
+    border: 2px solid #524738;
+    border-radius: 20px;
+    padding: 8px 14px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    z-index: 999;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    box-sizing: border-box;
+    animation: slideUpDock 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slideUpDock {
+    from {
+      transform: translate(-50%, 60px);
+      opacity: 0;
+    }
+    to {
+      transform: translate(-50%, 0);
+      opacity: 1;
+    }
+  }
+
+  .mobile-dock-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mobile-tool-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #332d26;
+    border: 1px solid #4f4435;
+    color: #fff;
+    font-size: 19px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .mobile-tool-btn:active,
+  .mobile-tool-btn.active {
+    background: #544431;
+    border-color: #d4af37;
+    transform: scale(1.08);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+  }
+
+  .mobile-dock-divider {
+    width: 1px;
+    height: 32px;
+    background: #4d4030;
+    margin: 0 2px;
+  }
+
+  .mobile-palette-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .mobile-color-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #1a1714;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s ease;
+  }
+  .mobile-color-dot.selected {
+    outline: 2px solid #ffd978;
+    transform: scale(1.22);
+  }
+
+  .mobile-picker-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #332d26;
+    border: 1px solid #5a4b39;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .mobile-slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #e5d8c3;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .mobile-slider-wrap input {
+    width: 50px;
+    accent-color: #d4af37;
+  }
+}
+
+/* ==========================================================================
+   MAIN WORKSPACE
+   ========================================================================== */
+
+.museum-workspace {
+  flex: 1;
+  min-width: 0;
+  padding: 36px 48px 120px; /* Extra bottom padding for mobile dock */
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* --- HEADER SECTION --- */
+.museum-header {
+  max-width: 1240px;
+  margin: 0 auto 36px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  border-bottom: 2px solid #221d18;
+  padding-bottom: 24px;
+  position: relative;
+}
+
+.museum-header::after {
+  content: '✦  THE DOODLE MUSEUM  ✦';
+  position: absolute;
+  bottom: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--wall-bg);
+  padding: 0 16px;
+  font-family: var(--font-serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: #1a1714;
+  letter-spacing: 4px;
+}
+
+.header-brand {
+  display: flex;
+  flex-direction: column;
+}
+
+.museum-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3.5px;
+  color: #785a26;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.museum-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 46px;
+  font-weight: 900;
+  color: #181512 !important;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.museum-subtitle {
+  margin: 8px 0 0;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-style: italic;
+  color: #484035;
+}
+
+.save-artwork-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.artwork-title-input {
+  width: 250px;
+  padding: 13px 16px;
+  background: #ffffff;
+  border: 2px solid #241f19;
+  border-radius: 6px;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  color: #1a1612;
+  outline: none;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+}
+
+.artwork-title-input:focus {
+  border-color: #8c6e33;
+  box-shadow: 0 0 0 3px rgba(207, 168, 88, 0.3);
+}
+
+.add-museum-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 22px;
+  background: #181512;
+  color: #ffffff;
+  border: 2px solid #181512;
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #8c6e33;
+  transition: all 0.18s ease;
+}
+
+.add-museum-btn:hover:not(:disabled) {
+  background: #332a20;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #8c6e33;
+}
+
+.add-museum-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   ARTIST STUDIO & EASEL (Black & White Sketchbook / Wood Easel)
+   ========================================================================== */
+
+.studio-section {
+  max-width: 1240px;
+  margin: 0 auto 70px;
+  text-align: center;
+  position: relative;
+}
+
+.studio-ribbon {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 3.5px;
+  color: #1a1714;
+  margin-bottom: 22px;
+  text-transform: uppercase;
+}
+
+.studio-ribbon::before,
+.studio-ribbon::after {
+  content: '';
+  display: inline-block;
+  width: 50px;
+  height: 2px;
+  background: #1a1714;
+}
+
+.canvas-grand-easel {
+  width: 950px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 18px;
+  background: #1a1612;
+  border: 4px solid #1a1612;
+  border-radius: 8px;
+  box-shadow: 
+    6px 6px 0px rgba(0,0,0,0.15),
+    0 20px 45px rgba(0, 0, 0, 0.22);
+  box-sizing: border-box;
+}
+
+.canvas-gold-fillet {
+  padding: 12px;
+  background: #fbf9f4;
+  border: 2px dashed #3a3227;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.studio-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1000 / 650;
+  background: #ffffff;
+  cursor: crosshair;
+  touch-action: none;
+  border-radius: 2px;
+}
+
+.easel-status-plaque {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 8px 28px;
+  background: #ffffff;
+  border: 2px solid #1a1714;
+  color: #1a1714;
+  font-family: var(--font-doodle);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  box-shadow: 3px 3px 0px #1a1714;
+  border-radius: 4px;
+}
+
+/* ==========================================================================
+   HAND-DRAWN SVG DOODLE FRAMES (Matching User Sketchbook & Image 2)
+   ========================================================================== */
+
+.exhibition-section {
+  max-width: 1300px;
+  margin: 70px auto 0;
+  position: relative;
+}
+
+.exhibition-title-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 50px;
+  text-align: center;
+}
+
+.exhibition-rule-line {
+  flex: 1;
+  height: 2px;
+  background: #181512;
+}
+
+.exhibition-header-text {
+  padding: 0 12px;
+}
+
+.exhibition-subtitle-tag {
+  font-family: var(--font-doodle);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #705524;
+  margin-bottom: 2px;
+}
+
+.exhibition-main-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 42px;
+  font-weight: 800;
+  color: #181512;
+}
+
+/* ==========================================================================
+   SALON GALLERY WALL MOSAIC CLUSTER (Matching Reference Image 1)
+   ========================================================================== */
+
+.salon-gallery-wall {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 200px;
+  grid-auto-flow: dense;
+  gap: 16px 20px;
+  align-items: center;
+  justify-items: center;
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 16px 0;
+}
+
+@media (max-width: 1100px) {
+  .salon-gallery-wall {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 180px;
+    gap: 14px 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .salon-gallery-wall {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 145px;
+    gap: 10px 12px;
+  }
+  /* Collapse large spans on tablet to avoid huge empty holes */
+  .artwork-card.salon-span-feature {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+  .artwork-card.salon-span-wide {
+    grid-column: span 2;
+    grid-row: span 1;
+  }
+  .artwork-card.salon-span-tall,
+  .artwork-card.salon-span-tall-narrow {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+/* ── PHONE (≤ 480px): Clean single-column stacked card feed ── */
+@media (max-width: 480px) {
+  .salon-gallery-wall {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0 0 12px;
+    max-width: 100%;
+  }
+
+  /* Every card becomes a full-width horizontal card on phone */
+  .artwork-card,
+  .artwork-card.salon-span-feature,
+  .artwork-card.salon-span-wide,
+  .artwork-card.salon-span-tall,
+  .artwork-card.salon-span-tall-narrow,
+  .artwork-card.salon-span-square,
+  .artwork-card.salon-span-compact {
+    width: 100%;
+    max-width: 100%;
+    grid-column: unset;
+    grid-row: unset;
+    margin-bottom: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  /* First card rounded top, last card rounded bottom */
+  .artwork-card:first-child { border-radius: 12px 12px 0 0; border-left: 3px solid #181512; border-right: 3px solid #181512; }
+  .artwork-card:last-child  { border-radius: 0 0 12px 12px; border-left: 3px solid #181512; border-right: 3px solid #181512; }
+
+  /* Make artwork preview tall enough to see the art */
+  .frame-svg-wrapper {
+    max-height: 220px;
+  }
+}
+
+/* Interlocking Salon Span Roles (Matching Reference Image 1) */
+
+/* 1. Grand Baroque Centerpiece: spans 2 columns x 2 rows */
+.artwork-card.salon-span-feature {
+  grid-column: span 2;
+  grid-row: span 2;
+  width: 100%;
+  max-width: 380px;
+}
+
+/* 2. Wide Landscape Horizontal: spans 2 columns x 1 row */
+.artwork-card.salon-span-wide {
+  grid-column: span 2;
+  grid-row: span 1;
+  width: 100%;
+  max-width: 440px;
+}
+
+/* 3. Tall Ovals & Portrait Frames: spans 1 column x 2 rows */
+.artwork-card.salon-span-tall {
+  grid-column: span 1;
+  grid-row: span 2;
+  width: 100%;
+  max-width: 250px;
+}
+
+/* 4. Tall Narrow Portrait: spans 1 column x 2 rows */
+.artwork-card.salon-span-tall-narrow {
+  grid-column: span 1;
+  grid-row: span 2;
+  width: 100%;
+  max-width: 210px;
+}
+
+/* 5. Ornate Square: spans 1 column x 1 row */
+.artwork-card.salon-span-square {
+  grid-column: span 1;
+  grid-row: span 1;
+  width: 100%;
+  max-width: 230px;
+}
+
+/* 6. Compact / Mini Cameo / Ribbon: spans 1 column x 1 row */
+.artwork-card.salon-span-compact {
+  grid-column: span 1;
+  grid-row: span 1;
+  width: 100%;
+  max-width: 220px;
+}
+
+/* Artwork Card */
+.artwork-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.artwork-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  z-index: 10;
+}
+
+/* --- DOODLE FRAME COMPONENT STYLES --- */
+.doodle-frame-wrapper {
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(4px 6px 0px rgba(0, 0, 0, 0.14));
+}
+
+.doodle-svg-frame {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  transition: transform 0.25s ease;
+}
+
+.artwork-card:hover .doodle-svg-frame {
+  transform: scale(1.02);
+}
+
+/* --- SNUG MUSEUM WALL PLAQUE --- */
+.museum-wall-plaque {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -6px;
+  padding: 3px 12px;
+  background: #ffffff;
+  border: 1.5px solid #181512;
+  border-radius: 4px;
+  box-shadow: 2px 2px 0px #181512;
+  max-width: 85%;
+  text-align: center;
+  position: relative;
+  z-index: 4;
+}
+
+.plaque-title {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: #181512;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.plaque-metadata {
+  font-family: var(--font-doodle);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #5e5241;
+}
+
+/* Empty Gallery */
+.gallery-empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #4e4436;
+}
+.empty-icon {
+  font-size: 52px;
+  margin-bottom: 12px;
+}
+.empty-text {
+  font-family: var(--font-doodle);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   MODAL SPOTLIGHT VIEWER
+   ========================================================================== */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 16, 14, 0.88);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  z-index: 1000;
+  animation: fadeInModal 0.2s ease-out;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-spotlight-box {
+  position: relative;
+  max-width: 840px;
+  width: 100%;
+  max-height: 92vh;
+  background: #faf7f0;
+  border: 4px solid #181512;
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 10px 10px 0px #181512, 0 25px 60px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #181512;
+  border: 2px solid #181512;
+  color: #ffffff;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px #785a26;
+  transition: transform 0.15s ease;
+}
+.modal-close-btn:hover {
+  transform: scale(1.15);
+}
+
+.modal-frame-wrapper {
+  padding: 14px;
+  background: #ffffff;
+  border: 3px solid #181512;
+  border-radius: 6px;
+  box-shadow: 5px 5px 0px #181512;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.modal-artwork-img {
+  display: block;
+  max-width: 680px;
+  max-height: 55vh;
+  width: 100%;
+  object-fit: contain;
+  background: #ffffff;
+}
+
+.modal-artwork-title {
+  margin: 22px 0 6px;
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 800;
+  color: #181512;
+  text-align: center;
+}
+
+.modal-artwork-sub {
+  font-family: var(--font-doodle);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #635542;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   RESPONSIVE OVERRIDES (Tablet & Phone)
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .museum-workspace {
+    padding: 24px 20px 120px;
+  }
+
+  .museum-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .header-brand {
+    align-items: center;
+  }
+
+  .canvas-grand-easel {
+    width: 100%;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  .museum-workspace {
+    padding: 16px 14px 130px; /* Generous space for mobile bottom dock */
+  }
+
+  .museum-title {
+    font-size: 34px;
+  }
+
+  .museum-subtitle {
+    font-size: 14px;
+  }
+
+  .save-artwork-panel {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .artwork-title-input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .add-museum-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 13px;
+  }
+
+  .canvas-grand-easel {
+    padding: 8px;
+    border-width: 3px;
+  }
+
+  .canvas-gold-fillet {
+    padding: 6px;
+  }
+
+  .exhibition-main-title {
+    font-size: 30px;
+  }
+
+  .artwork-card {
+    margin-bottom: 38px;
+  }
+}
+
+/* Museum Footer */
+.museum-footer {
+  text-align: center;
+  margin-top: 70px;
+  padding-top: 24px;
+  border-top: 2px solid #181512;
+  color: #4e4436;
+  font-family: var(--font-doodle);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   ARTIST AVATAR BADGES & SEALS (Top-Right of Gallery Frames)
+   ========================================================================== */
+
+.avatar-bubble-badge {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #fbf9f4;
+  border: 2px solid #181512;
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.avatar-bubble-badge.default {
+  font-size: 18px;
+}
+
+.avatar-img-custom {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.artwork-artist-seal {
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  z-index: 10;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+.artwork-artist-seal:hover {
+  transform: scale(1.2) rotate(10deg);
+}
+
+.plaque-artist-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 3px 0;
+}
+
+.plaque-artist-name {
+  font-family: var(--font-doodle);
+  font-size: 14px;
+  font-weight: 700;
+  color: #63533e;
+}
+
+/* ==========================================================================
+   AVATAR STUDIO MODAL ("Who Made This? Draw Your Face")
+   ========================================================================== */
+
+.avatar-studio-modal-card {
+  position: relative;
+  max-width: 640px;
+  width: 100%;
+  max-height: 94vh;
+  background: #faf7f2;
+  border: 4px solid #181512;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 10px 10px 0px #181512, 0 25px 60px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.avatar-modal-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.avatar-badge {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: #8c6e33;
+  margin-bottom: 4px;
+}
+
+.avatar-modal-title {
+  margin: 0 0 6px;
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 800;
+  color: #181512;
+}
+
+.avatar-modal-subtitle {
+  margin: 0;
+  font-size: 13.5px;
+  color: #5a5043;
+  max-width: 480px;
+  line-height: 1.4;
+}
+
+.avatar-fields-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 600px) {
+  .avatar-fields-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.input-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #181512;
+  text-transform: uppercase;
+}
+
+.styled-museum-input {
+  width: 100%;
+  padding: 11px 14px;
+  background: #ffffff;
+  border: 2px solid #181512;
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: #181512;
+  outline: none;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+  box-sizing: border-box;
+}
+.styled-museum-input:focus {
+  border-color: #8c6e33;
+  box-shadow: 0 0 0 3px rgba(207, 168, 88, 0.25);
+}
+
+.avatar-tab-pills {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tab-pill-btn {
+  padding: 8px 18px;
+  background: #eee8dc;
+  border: 2px solid #181512;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.tab-pill-btn.active {
+  background: #181512;
+  color: #ffffff;
+}
+
+/* Preset Board (Reference Image 1) */
+.preset-avatar-grid-board {
+  width: 100%;
+  background: #ede6d8;
+  border: 2px solid #181512;
+  border-radius: 8px;
+  padding: 14px;
+  box-sizing: border-box;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.board-banner-label {
+  font-family: var(--font-doodle);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #63533e;
+  margin-bottom: 10px;
+}
+
+.avatar-options-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 500px) {
+  .avatar-options-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+}
+
+.avatar-choice-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  border: 2px solid #2a251e;
+  border-radius: 8px;
+  padding: 8px 4px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+  transition: all 0.15s ease;
+}
+.avatar-choice-card:hover {
+  transform: translateY(-2px);
+  border-color: #8c6e33;
+}
+.avatar-choice-card.selected {
+  border-color: #d4af37;
+  box-shadow: 0 0 0 3px #181512, 0 4px 10px rgba(0,0,0,0.25);
+  background: #fff8e8;
+  transform: scale(1.05);
+}
+
+.avatar-choice-preview {
+  width: 48px;
+  height: 48px;
+}
+
+.avatar-choice-name {
+  font-family: var(--font-doodle);
+  font-size: 13px;
+  font-weight: 700;
+  color: #181512;
+}
+
+/* Draw Avatar Pad (Hairstyle Options + Drawing Studio) */
+.draw-avatar-pad-wrapper {
+  width: 100%;
+  background: #ede6d8;
+  border: 2px solid #181512;
+  border-radius: 8px;
+  padding: 14px;
+  box-sizing: border-box;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+/* Hairstyle Carousel (Reference Image 2) */
+.hair-options-carousel {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 10px;
+  margin-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.hair-template-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 82px;
+  padding: 6px 4px;
+  background: #ffffff;
+  border: 2px solid #181512;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.hair-template-btn:hover {
+  transform: translateY(-2px);
+  border-color: #8c6e33;
+}
+.hair-template-btn.selected {
+  background: #fff5dc;
+  border-color: #181512;
+  box-shadow: 0 0 0 2.5px #181512, 0 3px 6px rgba(0,0,0,0.2);
+  transform: scale(1.05);
+}
+
+.hair-btn-icon {
+  font-size: 18px;
+}
+
+.hair-btn-label {
+  font-family: var(--font-doodle);
+  font-size: 12px;
+  font-weight: 700;
+  color: #181512;
+  white-space: nowrap;
+}
+
+/* Avatar Canvas + Tools Assembly */
+.avatar-canvas-assembly {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.avatar-draw-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #181512;
+  overflow: hidden;
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.1), 3px 3px 0px rgba(0,0,0,0.2);
+  flex-shrink: 0;
+}
+
+.avatar-draw-canvas {
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.avatar-tools-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  background: #ffffff;
+  padding: 10px 14px;
+  border: 2px solid #181512;
+  border-radius: 6px;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.15);
+}
+
+.avatar-tool-buttons-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mini-tool-btn {
+  padding: 5px 10px;
+  background: #fbf9f3;
+  border: 1.5px solid #181512;
+  border-radius: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+.mini-tool-btn:hover {
+  background: #f0e6d2;
+}
+.mini-tool-btn.active {
+  background: #181512;
+  color: #fff;
+  border-color: #181512;
+}
+
+/* Color Pills */
+.avatar-color-pills {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.mini-color-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid #181512;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease;
+}
+.mini-color-dot.selected {
+  transform: scale(1.3);
+  box-shadow: 0 0 0 2px #181512;
+}
+
+/* Brush & Eraser Slider */
+.avatar-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #181512;
+  width: 100%;
+}
+
+.avatar-size-slider {
+  accent-color: #181512;
+  cursor: pointer;
+  flex: 1;
+}
+
+.slider-value {
+  font-family: var(--font-doodle);
+  font-size: 13px;
+  min-width: 28px;
+}
+
+/* Caricature Filter Mode Selector */
+.caricature-mode-pills {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.caricature-pill-btn {
+  padding: 6px 12px;
+  background: #ffffff;
+  border: 2px solid #181512;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+}
+.caricature-pill-btn:hover {
+  background: #fdf5e2;
+}
+.caricature-pill-btn.active {
+  background: #181512;
+  color: #ffffff;
+  box-shadow: 2px 2px 0px #8c6e33;
+}
+
+/* Preview Plaque Bar */
+.artist-preview-plaque-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 16px;
+  background: #ffffff;
+  border: 2px solid #181512;
+  border-radius: 6px;
+  box-shadow: 2px 2px 0px #181512;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.preview-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #8c6e33;
+}
+
+.preview-stamp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-stamp-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.preview-stamp-text strong {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  color: #181512;
+}
+.preview-stamp-text span {
+  font-family: var(--font-doodle);
+  font-size: 13px;
+  color: #63533e;
+}
+
+/* Actions */
+.avatar-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.hang-museum-btn {
+  width: 100%;
+  padding: 14px;
+  background: #181512;
+  color: #ffffff;
+  border: 2px solid #181512;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #8c6e33;
+  transition: all 0.15s ease;
+}
+.hang-museum-btn:hover:not(:disabled) {
+  background: #332a20;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #8c6e33;
+}
+
+.open-photobooth-pill-btn {
+  width: 100%;
+  padding: 11px;
+  background: #fff8e8;
+  color: #181512;
+  border: 2px dashed #8c6e33;
+  border-radius: 6px;
+  font-family: var(--font-doodle);
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.open-photobooth-pill-btn:hover {
+  background: #fae4a5;
+  border-style: solid;
+}
+
+/* ==========================================================================
+   API KEY GATE (one-time Gemini API key entry)
+   ========================================================================== */
+
+.api-key-gate {
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  padding: 8px 4px 4px;
+}
+
+.api-key-gate-icon {
+  font-size: 44px;
+  margin-bottom: 8px;
+}
+
+.api-key-gate-title {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 800;
+  color: #181512;
+  margin: 0 0 8px;
+}
+
+.api-key-gate-desc {
+  font-size: 13.5px;
+  color: #4a3e30;
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.api-key-gate-steps {
+  text-align: left;
+  display: inline-block;
+  font-size: 13px;
+  color: #3b3022;
+  margin: 0 0 16px;
+  padding-left: 20px;
+  line-height: 1.9;
+}
+
+.api-key-gate-steps a {
+  color: #7a5c1e;
+  font-weight: 700;
+}
+
+.api-key-input-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.api-key-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2.5px solid #181512;
+  border-radius: 6px;
+  background: #fffef8;
+  font-size: 13px;
+  font-family: monospace;
+  box-shadow: inset 1px 1px 0px rgba(0,0,0,0.06);
+  outline: none;
+}
+.api-key-input:focus {
+  border-color: #8c6e33;
+  box-shadow: 0 0 0 3px rgba(140,110,51,0.18);
+}
+
+.api-key-save-btn {
+  padding: 10px 18px;
+  background: #181512;
+  color: #fff;
+  border: 2px solid #181512;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #705524;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.api-key-save-btn:hover {
+  background: #382e22;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #705524;
+}
+
+.api-key-error {
+  color: #b04a20;
+  font-size: 12px;
+  font-weight: 700;
+  margin: 6px 0 0;
+}
+
+.api-key-privacy {
+  font-size: 11px;
+  color: #8e7a60;
+  margin: 10px 0 0;
+  font-style: italic;
+}
+
+/* Tiny "change key" link at bottom of booth */
+.api-key-tiny-reset {
+  background: none;
+  border: none;
+  color: #8e7a60;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.api-key-tiny-reset:hover { color: #4a3e30; }
+
+/* ==========================================================================
+   AI PROCESSING SCREEN (shown while Gemini generates the image)
+   ========================================================================== */
+
+.ai-processing-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #181512 0%, #2e2418 100%);
+  color: #faf0d7;
+  gap: 12px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.ai-processing-spinner {
+  font-size: 52px;
+  animation: spin-sparkle 1.4s ease-in-out infinite;
+}
+
+@keyframes spin-sparkle {
+  0%   { transform: rotate(0deg) scale(1); }
+  25%  { transform: rotate(90deg) scale(1.2); }
+  50%  { transform: rotate(180deg) scale(1); }
+  75%  { transform: rotate(270deg) scale(1.15); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.ai-processing-text {
+  font-family: var(--font-doodle);
+  font-size: 17px;
+  font-weight: 700;
+  color: #fae4a5;
+  text-align: center;
+  margin: 0;
+}
+
+.ai-processing-sub {
+  font-size: 12px;
+  color: #b09a74;
+  text-align: center;
+  margin: 0;
+}
+
+/* ==========================================================================
+   API ERROR BANNER
+   ========================================================================== */
+
+.api-error-banner {
+  width: 100%;
+  background: #fff0ec;
+  border: 2px solid #b04a20;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #7a2a0e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.api-key-reset-link {
+  background: none;
+  border: none;
+  color: #7a2a0e;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+/* ==========================================================================
+   PHOTO BOOTH MODAL (Reference Image 2: "LIVE doodle Photo Booth")
+   ========================================================================== */
+
+.photobooth-modal-card {
+  position: relative;
+  max-width: 900px;
+  width: 100%;
+  max-height: 94vh;
+  background: #d8c29d; /* Cardboard aesthetic */
+  background-image: 
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,0.2) 0%, transparent 60%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 2px, transparent 2px, transparent 4px);
+  border: 5px solid #181512;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 12px 12px 0px #181512, 0 30px 70px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.cardboard-booth-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.cardboard-badge {
+  display: inline-block;
+  background: #181512;
+  color: #ffffff;
+  padding: 4px 14px;
+  border-radius: 4px;
+  font-family: var(--font-doodle);
+  font-size: 22px;
+  font-weight: 700;
+  transform: rotate(-3deg);
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+}
+
+.cardboard-title {
+  margin: 6px 0 2px;
+  font-family: var(--font-doodle);
+  font-size: 44px;
+  font-weight: 800;
+  color: #181512;
+  letter-spacing: -0.5px;
+  text-shadow: 2px 2px 0px rgba(255,255,255,0.6);
+}
+
+.cardboard-subtitle {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #3b3022;
+}
+
+.photobooth-split-view {
+  display: flex;
+  gap: 32px;
+  width: 100%;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+@media (max-width: 800px) {
+  .photobooth-split-view {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.photobooth-camera-pane {
+  flex: 1;
+  max-width: 440px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.camera-viewfinder-box {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #181512;
+  border: 4px solid #181512;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.live-camera-video,
+.captured-photo-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Webcam: mirror for selfie feel */
+.live-camera-video {
+  transform: scaleX(-1);
+}
+
+/* Original photo thumbnail pip (bottom-left corner of viewfinder) */
+.original-thumb-pip {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255,255,255,0.88);
+  border: 2px solid #181512;
+  border-radius: 4px;
+  padding: 4px;
+  z-index: 5;
+}
+.original-thumb-pip img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 2px;
+  display: block;
+}
+.original-thumb-pip span {
+  font-size: 9px;
+  font-weight: 700;
+  color: #181512;
+  letter-spacing: 0.5px;
+}
+
+/* Upload label styled as a button (separate from camera snapshot) */
+.booth-upload-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  border: 2px dashed #181512;
+  background: #fdf8ec;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.booth-upload-label:hover {
+  background: #fde9a0;
+  border-style: solid;
+}
+
+/* Camera fallback hint below action buttons */
+.camera-fallback-notice {
+  font-size: 11.5px;
+  color: #6a5c48;
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+  font-style: italic;
+}
+
+.camera-placeholder-notice {
+  color: #d6cbba;
+  text-align: center;
+  padding: 20px;
+}
+.camera-placeholder-notice span {
+  font-size: 40px;
+}
+.camera-placeholder-notice p {
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.camera-countdown-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-doodle);
+  font-size: 72px;
+  font-weight: 800;
+  color: #181512;
+  animation: popCount 0.4s ease-out;
+}
+
+@keyframes popCount {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.camera-action-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.booth-btn {
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 2px solid #181512;
+}
+.booth-btn.primary {
+  background: #181512;
+  color: #ffffff;
+  box-shadow: 3px 3px 0px #705524;
+}
+.booth-btn.primary:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #705524;
+}
+.booth-btn.secondary {
+  background: #ffffff;
+  color: #181512;
+  box-shadow: 3px 3px 0px #181512;
+}
+.booth-btn.outline {
+  background: #faf5ea;
+  color: #181512;
+}
+.booth-btn.outline.active {
+  background: #ffd978;
+}
+
+/* Photostrip Preview (Vertical Cardboard / Paper Strip from Reference Image 2) */
+.photobooth-strip-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.vintage-photo-strip {
+  width: 260px;
+  background: #faf7f0;
+  border: 3px solid #181512;
+  box-shadow: 6px 6px 0px #181512, 0 15px 35px rgba(0,0,0,0.25);
+  padding: 14px 12px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+
+.strip-header {
+  text-align: center;
+  border-bottom: 1.5px dashed #181512;
+  padding-bottom: 8px;
+}
+.strip-stars {
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: #8c6e33;
+}
+.strip-brand {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: 900;
+  color: #181512;
+  letter-spacing: 1px;
+}
+.strip-tag {
+  font-family: var(--font-doodle);
+  font-size: 13px;
+  font-weight: 700;
+  color: #63533e;
+}
+
+.strip-frame {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #ffffff;
+  border: 2px solid #181512;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.strip-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.strip-frame-empty {
+  text-align: center;
+  color: #8c8072;
+}
+.strip-frame-empty span {
+  font-size: 26px;
+}
+.strip-frame-empty p {
+  font-family: var(--font-doodle);
+  font-size: 14px;
+  margin: 4px 0 0;
+}
+
+.strip-avatar-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fbf9f3;
+  padding: 8px;
+}
+
+.strip-artist-signature {
+  text-align: center;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+}
+.strip-artist-signature .by-line {
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #8c6e33;
+  text-transform: uppercase;
+}
+.strip-artist-signature .name-line {
+  font-family: var(--font-doodle);
+  font-size: 17px;
+  font-weight: 700;
+  color: #181512;
+}
+.strip-artist-signature .hearts-line {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: #181512;
+}
+
+.strip-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1.5px dashed #181512;
+  padding-top: 6px;
+  font-family: var(--font-doodle);
+  font-size: 12px;
+  font-weight: 700;
+  color: #63533e;
+}
+
+.download-strip-btn {
+  width: 100%;
+  padding: 12px 18px;
+  background: #181512;
+  color: #ffffff;
+  border: 2px solid #181512;
+  border-radius: 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #705524;
+  transition: all 0.15s ease;
+}
+.download-strip-btn:hover {
+  background: #382e22;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #705524;
+}
