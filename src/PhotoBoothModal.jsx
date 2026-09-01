@@ -1,32 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { RenderAvatar } from './AvatarLibrary'
 
-const ILLUSTRATOR_WORKER_URL = 'https://doodle-illustrator.tamannaamanchikanti.workers.dev/'
-
-async function makeIllustration(photoDataUrl) {
-  const response = await fetch(ILLUSTRATOR_WORKER_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ image: photoDataUrl }),
-  })
-
-  if (!response.ok) {
-    const details = await response.text()
-    try { throw new Error(JSON.parse(details).error) } catch (error) {
-      if (error instanceof SyntaxError) throw new Error('The illustration service could not draw this photo yet.')
-      throw error
-    }
-  }
-
-  const blob = await response.blob()
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onerror = () => reject(new Error('Could not read the illustration.'))
-    reader.onload = () => resolve(reader.result)
-    reader.readAsDataURL(blob)
-  })
-}
-
 /* Instant local photo-strip panels. Nothing is uploaded and no account, key,
    server function, or AI quota is required. */
 function makeCutePanel(photoDataUrl, styleMode, variant) {
@@ -199,19 +173,8 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
   async function processPhoto(src) {
     setPhotoSnap(src)
-    setAnimeSnaps([])
+    setAnimeSnaps([src])
     setApiError('')
-    setIsProcessing(true)
-    setProcessingMsg('✏️ Drawing your doodle portrait...')
-    try {
-      const illustration = await makeIllustration(src)
-      setAnimeSnaps([illustration])
-    } catch (err) {
-      setApiError(err?.message || 'Could not draw this photo. Please try another one.')
-    } finally {
-      setIsProcessing(false)
-      setProcessingMsg('')
-    }
   }
 
   function resetPhoto() {
@@ -398,9 +361,9 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                 <div className="strip-tag">LIVE PHOTO BOOTH</div>
               </div>
 
-              {/* Frame 1 — illustrated doodle portrait */}
+              {/* Frame 1 — your photo */}
               <div className="strip-frame strip-avatar-frame">
-                {animeSnaps[0] ? <img src={animeSnaps[0]} alt="Your doodle portrait" className="strip-img" /> : <div className="strip-frame-empty"><span>✏️</span><p>Your doodle portrait</p></div>}
+                {animeSnaps[0] ? <img src={animeSnaps[0]} alt="Your photo" className="strip-img" /> : <div className="strip-frame-empty"><span>📸</span><p>Your photo</p></div>}
               </div>
 
               {/* Frame 2 — your artwork */}
