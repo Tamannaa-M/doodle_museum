@@ -191,6 +191,7 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
 
   const apiKey = 'local-browser-comic'
   const [cameraActive, setCameraActive] = useState(false)
+  const [startingCamera, setStartingCamera] = useState(false)
   const [cameraError, setCameraError] = useState(false)
   const [photoSnap, setPhotoSnap] = useState(null)         // original data-url
   const [animeSnaps, setAnimeSnaps] = useState([])         // two Gemini-generated poses
@@ -203,6 +204,9 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
   useEffect(() => () => stopCamera(), [])
 
   async function startCamera() {
+    if (streamRef.current) return true
+    setStartingCamera(true)
+    setCameraError(false)
     try {
       if (!navigator.mediaDevices?.getUserMedia) throw new Error('No camera API')
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -214,10 +218,16 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
         videoRef.current.srcObject = stream
         await videoRef.current.play()
         setCameraActive(true)
+        return true
       }
-    } catch {
+      return false
+    } catch (error) {
+      console.error('Camera permission error:', error)
       setCameraActive(false)
       setCameraError(true)
+      return false
+    } finally {
+      setStartingCamera(false)
     }
   }
 
@@ -226,10 +236,9 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
     streamRef.current = null
   }
 
-  function triggerSnapshot() {
+  async function triggerSnapshot() {
     if (!cameraActive) {
-      setCameraError(false)
-      startCamera()
+      await startCamera()
       return
     }
     let c = 3
@@ -474,10 +483,10 @@ export function PhotoBoothModal({ doodle, artistName, avatar, onClose }) {
                   type="button"
                   className="booth-btn primary"
                   onClick={triggerSnapshot}
-                  disabled={!cameraActive}
+                  disabled={startingCamera}
                   title={cameraActive ? 'Take a selfie with countdown' : 'Open camera'}
                 >
-                📸 {cameraActive ? 'Take Photo' : 'Open Camera'}
+                📸 {startingCamera ? 'Opening camera…' : cameraActive ? 'Take Photo' : 'Open Camera'}
                 </button>
               )}
 
